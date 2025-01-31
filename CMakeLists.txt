@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(simple_singular VERSION 1.0)
+project(singular_cpp VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -13,15 +13,15 @@ include_directories(${SINGULAR_INCLUDE_DIRS})
 include_directories(${SINGULAR_INCLUDE_DIRS}/singular)
 
 # Add executable
-add_executable(simple_singular src/main.cpp)
+add_executable(singular_cpp src/main.cpp)
 
 # Link all Singular libraries
 file(GLOB SINGULAR_LIBRARIES "${SINGULAR_LIBRARY_DIR}/*.so")
-target_link_libraries(simple_singular ${SINGULAR_LIBRARIES})
-target_link_libraries(simple_singular -lpthread -ldl -lm)
+target_link_libraries(singular_cpp ${SINGULAR_LIBRARIES})
+target_link_libraries(singular_cpp -lpthread -ldl -lm)
 
 # Install the executable
-install(TARGETS simple_singular
+install(TARGETS singular_cpp
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

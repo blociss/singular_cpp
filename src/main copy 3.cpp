@@ -1,13 +1,6 @@
 #include <singular/Singular/libsingular.h>
 #include <iostream>
 
-// Function to print an ideal
-void id_Write(const ideal I, const ring r) {
-    for (int i = 0; i < IDELEMS(I); i++) {
-        std::cout << pString((poly)I->m[i]) << std::endl;
-    }
-}
-
 int main() {
     // Initialize Singular
     siInit((char *)"/home/atraore/Singular4/lib/libSingular.so");
@@ -24,36 +17,45 @@ int main() {
     // Create and initialize polynomials p1, p2, ..., p52 dynamically
     ideal L = idInit(52, 1);  // 52 generators for the ideal
     for (int i = 0; i < 52; i++) {
-        poly p = p_ISet(1, R);  // Set polynomial with degree (1)
-        pSetExp(p, i + 1, 1);  // Set exponent for the i+1-th variable
+        poly p = p_ISet( 1, R);  // Set polynomial with degree (1)
+      
+        pSetExp(p, i + 1,  1);  // Set exponent for the i+1-th variable
+        
         L->m[i] = pCopy(p);  // Copy the polynomial into the ideal
     }
 
-/*     // Print the ideal's generators
-    std::cout << "Generators of ideal L: \n";
-    id_Write(L, R); */
+    // Call a Singular procedure (for example, computing the Grobner basis)
+    std::cout << "Calling Singular procedure to compute Grobner basis..." << std::endl;
+    ideal G = groebner(L);  // Compute the Grobner basis of the ideal L
+    
+    // Print the Grobner basis
+    std::cout << "Grobner basis of ideal L: \n";
+    for (int i = 0; i < IDELEMS(G); i++) {
+        pWrite(G->m[i]);
+        std::cout << std::endl;
+    }
 
-    // Compute the variety (ideal's associated variety)
+    
     ideal variety_ideal_std = kStd(L, currRing->qideal, testHomog, NULL);
-    std::cout << "Variety of the ideal: \n";
-    id_Write(variety_ideal_std, R);
-
+    /* std::cout << "Variety of the ideal: ";
+    pWrite(variety_ideal_std->m[1]);  // Print first generator of the variety ideal
+    std::cout << std::endl;
+ */
+    // Print the ideal's generators of the variety
+    std::cout << "Generators of ideal variety_ideal_std: \n";
     int tt = IDELEMS(variety_ideal_std);
-    std::cout << "Variety ideal size: " << tt << std::endl;
+    for (int i = 0; i < tt; i++) {
+        pWrite(variety_ideal_std->m[i]);
+        std::cout << " , ";
+    }
 
     // Clean up
     for (int i = 0; i < 52; i++) {
         pDelete(&L->m[i]);  // Clean up the polynomials in the ideal
     }
     idDelete(&L);  // Delete the ideal
+    idDelete(&G);  // Delete the Grobner basis
     rKill(R);  // Clean up the ring
-
-    // Finish up with Singular interpreter
-    currentVoice = feInitStdin(NULL);
-    int err = iiAllStart(NULL, "int ver=system(\"version\");\n", BT_proc, 0);
-    if (err)
-        errorreported = 0; // Reset error handling
-    printf("Interpreter returns %d\n", err);
 
     return 0;
 }

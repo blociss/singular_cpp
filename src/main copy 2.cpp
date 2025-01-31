@@ -23,7 +23,7 @@ lists pOLY_List(poly f0)
         else 
         {
             std::cout << "Warning: pHead(f0) returned NULL at index " << k << std::endl;
-        }
+        
 
         f0 = pNext(f0);
         if (f0 == NULL) break;
@@ -35,7 +35,7 @@ lists pOLY_List(poly f0)
 int main()
 {
   // Initialize Singular
-  siInit((char *)"/home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-snapshot_22_03-5jvwtprazqirywu2triw6rprjazzi3so/lib/libSingular.so");
+  siInit((char *)"/home/atraore/Singular4/lib/libSingular.so");
 
   // Construct the ring Z/32003[x,y,z]
   // The variable names

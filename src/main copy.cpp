@@ -4,7 +4,7 @@
 
 int main()
 {
-siInit((char *)"/home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-snapshot_22_03-5jvwtprazqirywu2triw6rprjazzi3so/lib/libSingular.so");
+siInit((char *)"/home/atraore/Singular4/lib/libSingular.so");
 
     // Define variable names
     char **n = (char**)omalloc(3 * sizeof(char*));
