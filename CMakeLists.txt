@@ -13,12 +13,16 @@ include_directories(${SINGULAR_INCLUDE_DIRS})
 include_directories(${SINGULAR_INCLUDE_DIRS}/singular)
 
 # Add executable
-add_executable(singular_cpp src/main.cpp)
+add_executable(singular_cpp src/main.cpp src/singular_functions.cpp)
+
 
 # Link all Singular libraries
 file(GLOB SINGULAR_LIBRARIES "${SINGULAR_LIBRARY_DIR}/*.so")
 target_link_libraries(singular_cpp ${SINGULAR_LIBRARIES})
 target_link_libraries(singular_cpp -lpthread -ldl -lm)
+
+# Add GMP library to the link command
+target_link_libraries(singular_cpp ${SINGULAR_LIBRARIES} gmp -lpthread -ldl -lm)
 
 # Install the executable
 install(TARGETS singular_cpp

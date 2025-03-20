@@ -1,0 +1,32 @@
+system("ssi_list ../temp/waas_54549_1738847576961148731");
+system("ssi_list waas_54549_1738847576961148731");
+ link l="ssi:r waas_54549_1738847576961148731";
+ def m=read(l);
+ m.r_data;
+ def nr=m.r_data;
+ setring nr;
+ m.data[1];
+ link l="ssi:r waas_54549_1738847576961148731";
+ def m=read(l);
+ m.r_data;
+ def nr=m.r_data;
+ setring nr;
+ m.data[1];
+ link l="ssi:r waas_54549_1738847576961148731";
+ def m=read(l);
+ link l="ssi:r waas_54549_1738847576961148731";
+ def m=read(l);
+ring r;
+ def m=read(l);
+m;
+ m.r_data;
+ring r;
+ link l="ssi:r waas_54549_1738847576961148731";
+ def m=read(l);
+$
+ring r;
+ link l="ssi:r temp/waas_54549_1738847576961148731";
+
+ def m=read(l);
+
+$
