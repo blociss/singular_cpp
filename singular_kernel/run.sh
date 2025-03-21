@@ -11,8 +11,9 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$FLINT_HOME/lib:$GMP_HOME/lib:$SINGULAR_
 DEP_LIBS=$FLINT_HOME/lib
 
 # Navigate to the installation directory
-cd /home/atraore/gpi/try_gpi/singular_cpp/install_dir/bin
+cd /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/install_dir/bin
 
 # Run the executable with Valgrind
 #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./singular_cpp
-  ./singular_cpp
+./singular_cpp
+#gdb ./singular_cpp

@@ -1,0 +1,1 @@
+/home/atraore/gpi/try_gpi/singular_cpp/flint/install_dir/bin/gauss

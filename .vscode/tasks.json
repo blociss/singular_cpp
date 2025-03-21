@@ -1,0 +1,51 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-I/usr/include/singular/",
+                "-I/usr/include/singular/singular",
+                "-I/usr/include/x86_64-linux-gnu/singular/singular",
+                "-I/usr/include/x86_64-linux-gnu/singular/",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-L/home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-snapshot_22_03-5jvwtprazqirywu2triw6rprjazzi3so/lib",
+                "-lSingular",
+                "-lomalloc",
+                "-lfactory",
+                "-lpolys",
+                "-lsingular_resources",
+                "-lgmp" // link GMP explicitly
+            ],
+            "env": {
+                "SINGULAR_INSTALL_DIR": "/home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-snapshot_22_03-5jvwtprazqirywu2triw6rprjazzi3so",
+                "FLINT_HOME": "/home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-snapshot_22_03-5jvwtprazqirywu2triw6rprjazzi3so/lib",
+                "LD_LIBRARY_PATH": "/home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-snapshot_22_03-5jvwtprazqirywu2triw6rprjazzi3so/lib:${env:LD_LIBRARY_PATH}",
+                "PATH": "/home/atraore/Singular4/bin:${env:PATH}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Generated task by debugging configuration."
+        },
+        {
+            "label": "run",
+            "type": "shell",
+            "command": "${fileDirname}/${fileBasenameNoExtension}",
+            "dependsOn": "build",
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            }
+        }
+    ]
+}
