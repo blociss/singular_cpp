@@ -1,221 +1,262 @@
 #include <singular/Singular/libsingular.h>
-#include <singular/kernel/polys.h>
-#include <singular/kernel/ideals.h>
 #include <iostream>
+#include <cstring>
+#include "feynman.h"
 
-// Convert a number to a string for debugging
-std::string numberToString(number c, ring R) {
-    StringSetS("");              // Initialize string buffer
-    n_Write(c, R->cf);           // Write number into buffer
-    char* singularStr = StringEndS(); // Retrieve buffer content
-    std::string result(singularStr);  // Convert to std::string
-    omFree(singularStr);              // Free Singular-allocated memory
-    return result;
-}
-
-// Print a number as a polynomial for debugging
-void printNumber(const number z, ring R) {
-    if (n_IsZero(z, R->cf)) {
-        std::cout << "number = 0\n";
-    } else {
-        poly p = p_One(R);
-        p_SetCoeff(p, n_Copy(z, R->cf), R);
-        p_Setm(p, R);
-        std::cout << "number = " << p_String(p, R) << "\n";
-        p_Delete(&p, R);
-    }
-}
-
-// Print a matrix for debugging
-void printMatrix(const matrix m, ring R) {
-    int rr = MATROWS(m);
-    int cc = MATCOLS(m);
-    std::cout << "\n-------------\n";
-    for (int r = 1; r <= rr; r++) {
-        for (int c = 1; c <= cc; c++) {
-            char* str = p_String(MATELEM(m, r, c), R);
-            std::cout << str << "  ";
-            omFree(str);
-        }
-        std::cout << "\n";
-    }
-    std::cout << "-------------\n";
-}
-
-// Compute the absolute value of a polynomial's coefficient
-number absValue(poly p, ring R) {
-    if (p == NULL) return n_Init(0, R->cf);
-    number result = n_Copy(p_GetCoeff(p, R), R->cf);
-    if (!n_GreaterZero(result, R->cf)) {
-        number neg = n_InpNeg(result, R->cf);
-        n_Delete(&result, R->cf);
-        result = neg;
-    }
-    return result;
-}
-
-
-
-lists gaussred_pivot(matrix A) {
-    ring r = currRing;
-    if (!r) {
-        std::cerr << "[ERROR] No current ring defined.\n";
-        return NULL;
-    }
-
-    int n = MATROWS(A), m = MATCOLS(A);
-    int mr = (n < m) ? n : m;
-    int k = 0, rank = 0;
-
-    matrix P = mpNew(n, n);
-    matrix U = mpNew(n, n);
-    matrix S = mp_Copy(A, r);
-
-    for (int i = 1; i <= n; i++) {
-        MATELEM(P, i, i) = pISet(1);
-        MATELEM(U, i, i) = pISet(1);
-    }
-
-    for (int i = 1; i <= mr; i++) {
-        int col = i + k;
-        if (col > m) break;
-
-        int jp = i;
-        number max_coeff = n_Copy(absValue(MATELEM(S, i, col), r), r->cf);
-
-        for (int j = i + 1; j <= n; j++) {
-            number c = n_Copy(absValue(MATELEM(S, j, col), r), r->cf);
-            if (n_Greater(c, max_coeff, r->cf)) {
-                n_Delete(&max_coeff, r->cf);
-                max_coeff = c;
-                jp = j;
-            } else {
-                n_Delete(&c, r->cf);
-            }
-        }
-        n_Delete(&max_coeff, r->cf);
-
-
-        if (jp != i) {
-            for (int j = 1; j <= m; j++)
-                std::swap(MATELEM(S, i, j), MATELEM(S, jp, j));
-            for (int j = 1; j <= n; j++)
-                std::swap(MATELEM(P, i, j), MATELEM(P, jp, j));
-        }
-
-        poly pivot = MATELEM(S, i, col);
-        if (!pivot) {
-            k++;
-            i--;
-            continue;
-        }
-
-        number pivot_coeff = p_GetCoeff(pivot, r);
-
-        for (int j = i + 1; j <= n; j++) {
-            poly num = MATELEM(S, j, col);
-            if (!num) {
-                continue;
-            }
-
-            number num_coeff = p_GetCoeff(num, r);
-            number c = n_Div(num_coeff, pivot_coeff, r->cf);
-           
-
-            for (int l = col; l <= m; l++) {
-                poly s_il = pCopy(MATELEM(S, i, l));
-                poly s_jl = pCopy(MATELEM(S, j, l));
-             
-
-                poly prod = s_il ? p_Mult_nn(s_il, c, r) : NULL;
-
-
-                poly sub_result = NULL;
-
-                if (s_jl && prod) {
-                    sub_result = p_Sub(p_Copy(s_jl, r), p_Copy(prod, r), r);
-                } else if (s_jl && !prod) {
-                    sub_result = p_Copy(s_jl, r);
-                } else if (!s_jl && prod) {
-                    sub_result = p_Neg(p_Copy(prod, r), r);
-                }
-
-
-                if (MATELEM(S, j, l)) p_Delete(&MATELEM(S, j, l), r);
-                MATELEM(S, j, l) = sub_result;
-
-                if (prod) p_Delete(&prod, r);
-            }
-
-            if (MATELEM(S, j, col)) {
-                p_Delete(&MATELEM(S, j, col), r);
-                MATELEM(S, j, col) = NULL;
-            }
-
-            if (MATELEM(U, j, i)) {
-                p_Delete(&MATELEM(U, j, i), r);
-                MATELEM(U, j, i) = NULL;
-            }
-            MATELEM(U, j, i) = p_NSet(c, r);
-        }
-
-        rank = i;
-    }
-
-    lists Z = (lists)omAlloc0Bin(slists_bin);
-    Z->Init(4);
-    Z->m[0].rtyp = MATRIX_CMD; Z->m[0].data = P;
-    Z->m[1].rtyp = MATRIX_CMD; Z->m[1].data = U;
-    Z->m[2].rtyp = MATRIX_CMD; Z->m[2].data = S;
-    Z->m[3].rtyp = INT_CMD;    Z->m[3].data = (void*)(long)rank;
-
-    return Z;
-}
 
 
 int main() {
-    // Initialize Singular library (adjust path as needed)
+    std::cout << "[DEBUG] Entering main\n";
     siInit((char*)"/home/atraore/Singular4/lib/libSingular.so");
+    std::cout << "[DEBUG] Singular initialized\n";
 
-    // Define a ring with one variable x over Q
-    char var_x[] = "x";
-    char* vars[] = {var_x};
-    ring r = rDefault(0, 1, vars);
+    // Create ring with variables q(1)..q(6)
+    char* varNames[] = {(char*)"q(1)", (char*)"q(2)", (char*)"q(3)", (char*)"q(4)", (char*)"q(5)", (char*)"q(6)"};
+    ring r = rDefault(0, 6, varNames);
     rComplete(r);
     rChangeCurrRing(r);
+    std::cout << "[DEBUG] Ring created\n";
 
-    // Create a 5x4 matrix A
-    matrix A = mpNew(5, 4);
-    MATELEM(A, 1, 1) = pISet(1);  MATELEM(A, 1, 2) = pISet(3);  MATELEM(A, 1, 3) = pISet(-1); MATELEM(A, 1, 4) = pISet(4);
-    MATELEM(A, 2, 1) = pISet(2);  MATELEM(A, 2, 2) = pISet(5);  MATELEM(A, 2, 3) = pISet(-1); MATELEM(A, 2, 4) = pISet(3);
-    MATELEM(A, 3, 1) = pISet(1);  MATELEM(A, 3, 2) = pISet(3);  MATELEM(A, 3, 3) = pISet(-1); MATELEM(A, 3, 4) = pISet(4);
-    MATELEM(A, 4, 1) = pISet(0);  MATELEM(A, 4, 2) = pISet(4);  MATELEM(A, 4, 3) = pISet(-3); MATELEM(A, 4, 4) = pISet(1);
-    MATELEM(A, 5, 1) = pISet(-3); MATELEM(A, 5, 2) = pISet(1);  MATELEM(A, 5, 3) = pISet(-5); MATELEM(A, 5, 4) = pISet(-2);
-std::cout<<" printMatrix A= ";
-printMatrix(A,r);
-    // Perform Gaussian elimination
-    lists Z = gaussred_pivot(A);
-    if (Z) {
-        matrix P = (matrix)Z->m[0].Data();
-        matrix U = (matrix)Z->m[1].Data();
-        matrix S = (matrix)Z->m[2].Data();
-        long rank = (long)Z->m[3].Data();
+    // Create vertices list
+    int verticesData[] = {1, 2, 3, 4};
+    lists vertices = createIntList(verticesData, 4);
 
-        std::cout << "P:\n"; printMatrix(P, r);
-        std::cout << "U:\n"; printMatrix(U, r);
-        std::cout << "S:\n"; printMatrix(S, r);
-        std::cout << "Rank: " << rank << "\n";
+    // Create edges list with pairs
+    int edgesData[][2] = {{1, 3}, {1, 2}, {1, 2}, {2, 4}, {3, 4}, {3, 4}};
+    lists edges = createEdgeList(edgesData, 6, nullptr, 0);
 
-        // Clean up the list
-        leftv wrapper = (leftv)omAlloc0Bin(sleftv_bin);
-        wrapper->rtyp = LIST_CMD;
-        wrapper->data = Z;
-        wrapper->CleanUp();
-        omFreeBin(wrapper, sleftv_bin);
+    // Create labels list using ring variables
+    lists labels = (lists)omAlloc(sizeof(sleftv));
+    labels->Init(6);
+    for (int i = 0; i < 6; i++) {
+        poly p = p_ISet(1, r);  // Create polynomial 1
+        p_SetExp(p, i + 1, 1, r);  // Set exponent for q(i+1) to 1
+        p_Setm(p, r);  // Update leading monomial
+        labels->m[i].rtyp = POLY_CMD;
+        labels->m[i].data = (void*)p;
     }
+    labels->nr = 5;
 
-    // Clean up
-    mp_Delete(&A, r);
+    // Create labeled graph
+    LabeledGraph G = makeLabeledGraph(vertices, edges, r, labels);
+    std::cout << "[DEBUG] Labeled graph created\n";
+
+    std::cout << "EXAMPLE:" << std::endl;
+    printLabeledGraph(G);
+    std::cout << "[DEBUG] Eliminating variables\n";
+    G = eliminateVariables(G);
+    removeElimVars(G);
+    std::cout << "[DEBUG] Eliminated variables: " << G.elimvars << std::endl;
+    
+    // Compute and print Baikov matrix
+    std::cout << "\n[DEBUG] Computing Baikov matrix...\n";
+    LabeledGraph G_baikov = computeBaikovMatrix(G);
+    std::cout << "[DEBUG] Baikov matrix computed\n";
+    
+    // Print the Baikov matrix
+    if (G_baikov.baikovmatrix != NULL) {
+        std::cout << "Baikov matrix:\n";
+        for (int i = 0; i < MATROWS(G_baikov.baikovmatrix); i++) {
+            for (int j = 0; j < MATCOLS(G_baikov.baikovmatrix); j++) {
+                poly p = MATELEM(G_baikov.baikovmatrix, i + 1, j + 1);
+                if (p != NULL) {
+                    std::cout << "[" << i << "," << j << "] = " << p_String(p, G_baikov.baikovover) << "\n";
+                }
+            }
+        }
+        std::cout << std::endl;
+    }
+    
+    ideal I = balancingIdeal(G);  
+
+std::cout << "[DEBUG] Balancing ideal computed\n";
+    for (int i = 0; i < IDELEMS(I); i++) {
+        std::cout<<"[DEBUG] I->m["<<i<<"]="<<pString((poly)I->m[i])<<std::endl;
+    }
+    
+    // Example of IBP computation
+    std::cout << "\n[DEBUG] Computing IBP relations...\n";
+    
+    // First compute M1 directly
+    std::cout << "[DEBUG] Computing M1 directly...\n";
+    ring savedRing = currRing;
+    rChangeCurrRing(G_baikov.baikovover);
+    ideal M1_direct = computeM1(G_baikov);
+    if (M1_direct != NULL) {
+        std::cout << "[DEBUG] M1 computed directly, size: " << IDELEMS(M1_direct) << std::endl;
+        for (int i = 0; i < IDELEMS(M1_direct); i++) {
+            std::cout << "  M1[" << i << "] = " << p_String(M1_direct->m[i], currRing) << std::endl;
+        }
+    } else {
+        std::cout << "[ERROR] Failed to compute M1 directly" << std::endl;
+    }
+    rChangeCurrRing(savedRing);
+    
+    // Create Nu list for testing M2
+    std::cout << "[DEBUG] Creating Nu list for M2...\n";
+    lists Nu = (lists)omAlloc(sizeof(sleftv));
+    ring oldRing = currRing;
+    rChangeCurrRing(G_baikov.baikovover);
+    int n = rVar(currRing);
+    rChangeCurrRing(oldRing);
+    Nu->Init(n);
+    for (int i = 0; i < n; i++) {
+        Nu->m[i].rtyp = INT_CMD;
+        Nu->m[i].data = (void*)(long)(1);  // Set all Nu elements to 1 for simplicity
+    }
+    Nu->nr = n - 1;
+    
+    // Compute M2 directly
+    std::cout << "[DEBUG] Computing M2 directly...\n";
+    rChangeCurrRing(G_baikov.baikovover);
+    ideal M2_direct = computeM2(G_baikov, Nu);
+    if (M2_direct != NULL) {
+        std::cout << "[DEBUG] M2 computed directly, size: " << IDELEMS(M2_direct) << std::endl;
+        for (int i = 0; i < IDELEMS(M2_direct); i++) {
+            std::cout << "  M2[" << i << "] = " << p_String(M2_direct->m[i], currRing) << std::endl;
+        }
+    } else {
+        std::cout << "[ERROR] Failed to compute M2 directly" << std::endl;
+    }
+    rChangeCurrRing(savedRing);
+    
+    // Create setNu list containing Nu for computeManyIBP
+    std::cout << "[DEBUG] Creating setNu for computeManyIBP...\n";
+    lists setNu = (lists)omAlloc(sizeof(sleftv));
+    setNu->Init(1);
+    setNu->m[0].rtyp = LIST_CMD;
+    setNu->m[0].data = (void*)Nu;
+    setNu->nr = 0;
+    
+    // Now try computeManyIBP
+    std::cout << "[DEBUG] Computing many IBP relations...\n";
+    ideal M1 = computeM1(G_baikov);
+    if (M1 != NULL) {
+        std::cout << "M1 computed successfully\n";
+        std::cout << "M1 size: " << IDELEMS(M1) << ", rank: " << M1->rank << std::endl;
+    }
+    
+    // Compute M2
+    std::cout << "Computing M2...\n";
+    ideal M2 = computeM2(G_baikov, Nu);
+    if (M2 != NULL) {
+        std::cout << "M2 computed successfully\n";
+        std::cout << "M2 size: " << IDELEMS(M2) << ", rank: " << M2->rank << std::endl;
+    }
+    
+    // Compute many IBP relations
+    std::cout << "Computing many IBP relations...\n";
+    SetIBP ibp = computeManyIBP(G_baikov, setNu);
+    if (ibp.IBP != NULL) {
+        std::cout << "IBP relations computed successfully\n";
+        std::cout << "Number of IBP relations: " << ibp.IBP->nr + 1 << std::endl;
+    }
+    // Cleanup in reverse order of creation
+    std::cout << "[DEBUG] Starting cleanup\n";
+    
+    // First cleanup IBP-related objects
+    if (M1_direct != NULL) {
+        std::cout << "[DEBUG] Cleaning up M1_direct module\n";
+        id_Delete((ideal*)&M1_direct, G_baikov.baikovover);
+    }
+    
+    if (M2_direct != NULL) {
+        std::cout << "[DEBUG] Cleaning up M2_direct module\n";
+        id_Delete((ideal*)&M2_direct, G_baikov.baikovover);
+    }
+    
+    if (M1 != NULL) {
+        std::cout << "[DEBUG] Cleaning up M1 module\n";
+        id_Delete((ideal*)&M1, currRing);
+    }
+    
+    if (M2 != NULL) {
+        std::cout << "[DEBUG] Cleaning up M2 module\n";
+        id_Delete((ideal*)&M2, currRing);
+    }
+    
+    if (ibp.IBP != NULL) {
+        std::cout << "[DEBUG] Cleaning up IBP list\n";
+        ibp.IBP->Clean();
+    }
+    
+    if (Nu != NULL) {
+        std::cout << "[DEBUG] Cleaning up Nu list\n";
+        Nu->Clean();
+        omFree(Nu);
+    }
+    
+    if (setNu != NULL) {
+        std::cout << "[DEBUG] Cleaning up setNu list\n";
+        setNu->Clean();
+        omFree(setNu);
+    }
+    
+    // Then cleanup the Baikov matrix and balancing ideal
+    ring cleanupRing = currRing;
+    
+    if (G_baikov.baikovmatrix != NULL) {
+        std::cout << "[DEBUG] Cleaning up Baikov matrix\n";
+        if (G_baikov.baikovover != NULL) {
+            rChangeCurrRing(G_baikov.baikovover);
+            id_Delete((ideal*)&G_baikov.baikovmatrix, G_baikov.baikovover);
+            rChangeCurrRing(cleanupRing);
+        }
+    }
+    
+    if (G_baikov.baikovover != NULL) {
+        std::cout << "[DEBUG] Cleaning up Baikov ring\n";
+        if (G_baikov.baikovover != cleanupRing) {
+            rKill(G_baikov.baikovover);
+        }
+    }
+    
+    if (I != NULL) {
+        std::cout << "[DEBUG] Cleaning up balancing ideal\n";
+        id_Delete(&I, currRing);
+    }
+    
+    // Then cleanup the graph's memory
+    std::cout << "[DEBUG] Cleaning up graph memory\n";
+    if (G.labels != NULL) {
+        std::cout << "[DEBUG] Cleaning up graph labels\n";
+        G.labels->Clean(currRing);
+        omFree(G.labels);
+        G.labels = NULL;
+    }
+    if (G.elimvars != NULL) {
+        std::cout << "[DEBUG] Cleaning up eliminated variables\n";
+        G.elimvars->Clean(currRing);
+        omFree(G.elimvars);
+        G.elimvars = NULL;
+    }
+    
+    // Finally cleanup the input data
+    std::cout << "[DEBUG] Cleaning up input data\n";
+    if (vertices != NULL) {
+        vertices->Clean(r);
+        omFree(vertices);
+        vertices = NULL;
+    }
+    if (edges != NULL) {
+        edges->Clean(r);
+        omFree(edges);
+        edges = NULL;
+    }
+    if (labels != NULL) {
+        labels->Clean(r);
+        omFree(labels);
+        labels = NULL;
+    }
+    
+    // Kill the rings in reverse order
+    std::cout << "[DEBUG] Killing rings\n";
+    if (currRing != r) {
+        rKill(currRing);
+    }
     rKill(r);
+    
+    std::cout << "[DEBUG] Cleanup complete\n";
+    std::cout << "[DEBUG] Exiting main\n";
     return 0;
 }

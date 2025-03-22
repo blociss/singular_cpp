@@ -18,7 +18,10 @@ link_directories(${SINGULAR_INSTALL_DIR}/lib)
 link_directories(${GMP_HOME}/lib)
 
 # Add executable from src/
-add_executable(singular_cpp src/main.cpp)
+add_executable(singular_cpp 
+    src/main.cpp
+    src/feynman.cpp
+    src/feynman.h)
 
 # Find all shared Singular libs
 file(GLOB SINGULAR_LIBS "${SINGULAR_INSTALL_DIR}/lib/*.so")
