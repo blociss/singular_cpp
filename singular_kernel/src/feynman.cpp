@@ -774,8 +774,8 @@ LabeledGraph computeBaikovMatrix(const LabeledGraph& G) {
     return G1;
 }
 
-// Compute M1 ideal for IBP relations
-ideal computeM1(const LabeledGraph& G) {
+// Compute M1 module for IBP relations
+ideal computeM1(const LabeledGraph& G) {  // Note: Returns ideal type but will be a module
     std::cout << "[DEBUG] Entering computeM1" << std::endl;
     
     // Check if Baikov ring and matrix are initialized
@@ -793,7 +793,7 @@ ideal computeM1(const LabeledGraph& G) {
         std::cout << "[ERROR] Not in Baikov ring" << std::endl;
         return NULL;
     }
-    
+    std::cout<<"[DEBUG] currRing: "<<rString(currRing)<<", G.baikovover: "<<rString(G.baikovover)<<std::endl;
     std::cout << "[DEBUG] Getting Baikov matrix" << std::endl;
     matrix B = G.baikovmatrix;
     if (!B) {
@@ -807,7 +807,7 @@ ideal computeM1(const LabeledGraph& G) {
     int m = rPar(G.over);         // Number of parameters
     int L = rVar(G.over);         // Number of loop variables
     int E = n - L;                // Number of edge variables
-    
+    std::cout<<"[DEBUG] n: "<<n<<", m: "<<m<<", L: "<<L<<", E: "<<E<<std::endl;
     // Print matrix B for debugging
     std::cout << "[DEBUG] Baikov matrix contents:" << std::endl;
     for (int i = 1; i <= MATROWS(B); i++) {
@@ -884,14 +884,17 @@ ideal computeM1(const LabeledGraph& G) {
         }
     }
     
-    // Create M1 as an ideal
-    ideal M1 = idInit(rows, 1); // One polynomial per row
+    // Create M1 as a module
+    ideal M1 = idInit(rows, n); // rows generators in a free module of rank n
     for (int i = 0; i < MATROWS(C); i++) {
         poly rowPoly = NULL;
         for (int j = 0; j < MATCOLS(C); j++) {
             poly term = MATELEM(C, i + 1, j + 1);
             if (term) {
-                rowPoly = p_Add_q(rowPoly, p_Copy(term, currRing), currRing);
+                // Create module component: term * gen(j+1)
+                poly modTerm = p_Copy(term, currRing);
+                p_SetComp(modTerm, j + 1, currRing);  // Set component number (1-based)
+                rowPoly = p_Add_q(rowPoly, modTerm, currRing);
             }
         }
         M1->m[i] = rowPoly;

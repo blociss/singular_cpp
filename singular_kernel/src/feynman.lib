@@ -866,6 +866,7 @@ matrix C[n][n];
 int tem=0;
 int E = m;
 int L = nvars(R);
+print("[DEBUG] n: " + string(n) + ", m: " + string(m) + ", L: " + string(L) + ", E: " + string(E));
 list x;
 for(int i=1;i<=E;i++){
   for(int j=E+1;j<=E+L;j++){ 

@@ -16,7 +16,7 @@ int main() {
     rComplete(r);
     rChangeCurrRing(r);
     std::cout << "[DEBUG] Ring created\n";
-
+    std::cout << "[DEBUG] Current ring: " <<rString(currRing) << std::endl;
     // Create vertices list
     int verticesData[] = {1, 2, 3, 4};
     lists vertices = createIntList(verticesData, 4);
@@ -52,8 +52,9 @@ int main() {
     std::cout << "\n[DEBUG] Computing Baikov matrix...\n";
     LabeledGraph G_baikov = computeBaikovMatrix(G);
     std::cout << "[DEBUG] Baikov matrix computed\n";
-    
-    // Print the Baikov matrix
+    std::cout << "[DEBUG] Current ring: " << rString(currRing) << std::endl;
+    std::cout << "[DEBUG] Baikov ring: " << rString(G_baikov.baikovover) << std::endl;
+   /*  // Print the Baikov matrix
     if (G_baikov.baikovmatrix != NULL) {
         std::cout << "Baikov matrix:\n";
         for (int i = 0; i < MATROWS(G_baikov.baikovmatrix); i++) {
@@ -65,7 +66,7 @@ int main() {
             }
         }
         std::cout << std::endl;
-    }
+    } */
     
     ideal I = balancingIdeal(G);  
 
