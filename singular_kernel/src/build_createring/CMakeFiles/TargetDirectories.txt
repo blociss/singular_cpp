@@ -1,0 +1,3 @@
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build_createring/CMakeFiles/createring_test.dir
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build_createring/CMakeFiles/edit_cache.dir
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build_createring/CMakeFiles/rebuild_cache.dir

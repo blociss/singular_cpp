@@ -66,7 +66,7 @@ SetIBP computeManyIBP(const LabeledGraph& G, lists setNu);
 Graph makeGraph(lists vertices, lists edges);
 LabeledGraph makeLabeledGraph(lists vertices, lists edges);
 void printGraph(const Graph& G);
-LabeledGraph labelGraph(const Graph& G);
+LabeledGraph labelGraph(Graph G, int ch);
 ideal balancingIdeal(const LabeledGraph& G);
 LabeledGraph eliminateVariables(LabeledGraph G);
 ideal propagators(const LabeledGraph& G);
@@ -78,13 +78,15 @@ void removeElimVars(LabeledGraph& G);
  * @param G A labeled graph where redundant variables have been eliminated
  * @return A labeled graph with the Baikov matrix computed
  */
-LabeledGraph computeBaikovMatrix(const LabeledGraph& G);
+LabeledGraph computeBaikovMatrix(const Graph& G0);
+LabeledGraph computeBaikovMatrix(const LabeledGraph& G0);
 // Module computation functions - using ideal for now as placeholder
 ideal computeM1(const LabeledGraph& G);
 ideal computeM2(const LabeledGraph& G, lists L);
 SetIBP computeIBP(const LabeledGraph& G, lists L);
 
 // Helper functions
+int size(lists L);
 Net netList(lists L1);
 void printNet(const Net& N);
 Net catNet(const Net& N, const Net& M);
@@ -92,14 +94,16 @@ void printMat(matrix M);
 // Function declarations
 lists emptyString(int width);
 Graph makeGraph(lists vertices, lists edges);
-LabeledGraph makeLabeledGraph(lists vertices, lists edges, ring R, lists labels);
-void printGraph(Graph G);
+LabeledGraph makeLabeledGraph(lists vertices, lists edges, ring R, lists labels, ring Rpoly);
+
 lists createIntList(int* values, int size);
 lists createEdgeList(int edges[][2], int size, int singleEdges[], int singleSize);
-void printLabeledGraph(LabeledGraph G);
+void printLabeledGraph(const LabeledGraph& G);
 ideal balancingIdeal(const LabeledGraph& G);
 LabeledGraph substituteGraph(LabeledGraph G, poly lhs, poly rhs);
 LabeledGraph eliminateVariables(LabeledGraph G);
 ring removeVariable(ring R, int j);
 
+// Create a ring with specified variables and extension field
+ring createRing(char **extNames, int extCount, char **varNames, int varCount, rRingOrder_t varOrdering);
 #endif // FEYNMAN_H
