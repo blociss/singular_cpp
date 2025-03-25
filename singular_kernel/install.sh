@@ -49,24 +49,7 @@ if [ "$OS" = "Darwin" ]; then
 
 else
     echo "[INFO] Configuring for Linux"
-
-    # Check if running on Ubuntu/Debian
-    if [ -f /etc/debian_version ]; then
-        # Check for required packages
-        PACKAGES="build-essential gcc g++ cmake libgmp-dev libflint-dev singular"
-        
-        for pkg in $PACKAGES; do
-            if ! dpkg -l | grep -q "^ii  $pkg "; then
-                echo "[INFO] Installing $pkg..."
-                sudo apt-get update
-                sudo apt-get install -y $pkg
-            fi
-        done
-    else
-        echo "[WARNING] Non-Ubuntu/Debian system detected. Please ensure gcc and required packages are installed manually."
-    fi
-
-    # Set gcc as the default compiler
+    # Using system gcc and existing packages
     export CC="/usr/bin/gcc"
     export CXX="/usr/bin/g++"
 fi
