@@ -977,7 +977,7 @@ std::cout << "[DEBUG] I_mapped initialized" << std::endl;
 for (int i = 0; i < IDELEMS(I); i++) {
     if (I->m[i]) {
         std::cout << "[DEBUG] Mapping ideal element I[" << i << "] = " << p_String(I->m[i], G.over) << std::endl;
-        I_mapped->m[i] = p_PermPoly(I, perm, G.over, G.overpoly, NULL, NULL, 0, FALSE);
+        I_mapped->m[i] = p_PermPoly(I->m[i], perm, G.over, G.overpoly, NULL, NULL, 0, FALSE);
         std::cout << "[DEBUG] Mapped ideal element";
         if (I_mapped->m[i]) {
             char* s = p_String(I_mapped->m[i], G.overpoly);
