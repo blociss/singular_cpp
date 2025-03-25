@@ -8,13 +8,22 @@ export GMP_HOME=/home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.0
 # Set LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$FLINT_HOME/lib:$GMP_HOME/lib:$SINGULAR_INSTALL_DIR/lib:$LD_LIBRARY_PATH
 
-# Create build directory
-mkdir -p build_createring
-cd build_createring
 
-# Build
-cmake -DCMAKE_BUILD_TYPE=Release -S .. -B . -DCMAKE_INSTALL_PREFIX=../install_dir_createring
-make
+# Create build and install directories
+BUILD_DIR="build"
+INSTALL_DIR="install"
+rm -rf "$BUILD_DIR" "$INSTALL_DIR"
+mkdir -p "$BUILD_DIR" "$INSTALL_DIR"
 
-# Run the test
-./createring_test
+# Configure with CMake
+cmake -S . -B "$BUILD_DIR" \
+    -D CMAKE_INSTALL_PREFIX="$(pwd)/$INSTALL_DIR" \
+    -D CMAKE_BUILD_TYPE=Debug \
+    -D CMAKE_C_COMPILER=gcc \
+    -D CMAKE_CXX_COMPILER=g++
+
+# Build only (skip install)
+cmake --build "$BUILD_DIR"
+
+# Run the test directly from build directory
+"$BUILD_DIR/createring_test"

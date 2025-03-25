@@ -28,14 +28,6 @@ CMAKE_CXX_FLAGS=""
 if [ "$OS" = "Darwin" ]; then
     echo "[INFO] Configuring for macOS"
 
-    # Check for Xcode Command Line Tools
-    if ! command -v xcode-select &> /dev/null; then
-        echo "[ERROR] Xcode Command Line Tools not found. Installing..."
-        xcode-select --install
-        echo "[ERROR] Please run this script again after installation completes"
-        exit 1
-    fi
-
     # Check for Homebrew
     if ! command -v brew &> /dev/null; then
         echo "[ERROR] Homebrew not found. Please install Homebrew first:"
@@ -44,17 +36,48 @@ if [ "$OS" = "Darwin" ]; then
     fi
 
     # Check required packages
-    for pkg in cmake flint gmp singular; do
+    for pkg in gcc cmake flint gmp singular; do
         if ! brew list $pkg &> /dev/null; then
             echo "[INFO] Installing $pkg via Homebrew..."
             brew install $pkg
         fi
     done
 
+    # Set gcc as the default compiler
+    export CC="$(brew --prefix gcc)/bin/gcc-13"
+    export CXX="$(brew --prefix gcc)/bin/g++-13"
+
+else
+    echo "[INFO] Configuring for Linux"
+
+    # Check if running on Ubuntu/Debian
+    if [ -f /etc/debian_version ]; then
+        # Check for required packages
+        PACKAGES="build-essential gcc g++ cmake libgmp-dev libflint-dev singular"
+        
+        for pkg in $PACKAGES; do
+            if ! dpkg -l | grep -q "^ii  $pkg "; then
+                echo "[INFO] Installing $pkg..."
+                sudo apt-get update
+                sudo apt-get install -y $pkg
+            fi
+        done
+    else
+        echo "[WARNING] Non-Ubuntu/Debian system detected. Please ensure gcc and required packages are installed manually."
+    fi
+
+    # Set gcc as the default compiler
+    export CC="/usr/bin/gcc"
+    export CXX="/usr/bin/g++"
+fi
+
+# Set platform-specific paths
+if [ "$OS" = "Darwin" ]; then
     # Paths for macOS M1 (Homebrew default)
     FLINT_HOME="/opt/homebrew/opt/flint"
     GMP_HOME="/opt/homebrew/opt/gmp"
     SINGULAR_INSTALL_DIR="/opt/homebrew/opt/singular"
+
     export DYLD_LIBRARY_PATH="$FLINT_HOME/lib:$GMP_HOME/lib:$SINGULAR_INSTALL_DIR/lib:$DYLD_LIBRARY_PATH"
 
     # macOS SDK + libc++ headers

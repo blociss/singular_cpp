@@ -4,8 +4,9 @@
 #include <singular/polys/monomials/ring.h>
 #include <singular/Singular/maps_ip.h>
 #include <singular/Singular/ipid.h>
-#include <singular/coeffs/numbers.h>
 #include <singular/polys/simpleideals.h>
+#include <singular/coeffs/numbers.h> // For n_SetMap
+#include <singular/polys/prCopy.h>
 
     ring createRing(char **extNames, int extCount, char **varNames, int varCount, rRingOrder_t varOrdering) {
         // Create base coefficient field
@@ -53,7 +54,7 @@
                 return NULL;
             }
         }
-
+    
         // Create ring with specified ordering
         ring R = rDefault(cf, varCount, vars, varOrdering);
         // Clean up variable names
@@ -944,20 +945,80 @@ ideal balancingIdeal(const LabeledGraph& G) {
 
 LabeledGraph eliminateVariables(LabeledGraph G) {
     std::cout << "[DEBUG] Entering eliminateVariables" << std::endl;
-    ring savedRing = currRing;
-    rChangeCurrRing(G.over); // Switch to G.over
+    std::cout << "[DEBUG] Current ring: " << rString(currRing) << std::endl;
+  ring savedRing = currRing;
 
-    // Compute balancing ideal and standard basis
-    ideal I = balancingIdeal(G);
-    std::cout << "[DEBUG] Computing standard basis..." << std::endl;
-    ideal I_std = kStd(I, NULL, testHomog, NULL); // Standard basis in G.over
-    id_Delete(&I, G.over);
-    std::cout << "[DEBUG] Standard basis computed" << std::endl;
-    for (int i = 0; i < IDELEMS(I_std); i++) {
-        if (!I_std->m[i]) continue;
-        poly p = I_std->m[i];
-        std::cout << "[DEBUG] Standard basis element: " << pString(p) << std::endl;
+// Compute balancing ideal in G.over
+std::cout << "[DEBUG] Switching to ring: " << rString(G.over) << std::endl;
+rChangeCurrRing(G.over);
+ideal I = balancingIdeal(G);
+std::cout << "[DEBUG] Ideal computed" << std::endl;
+for (int i = 0; i < IDELEMS(I); i++) {
+    if (!I->m[i]) continue;
+    char* s = p_String(I->m[i], G.over);
+    std::cout << "[DEBUG] Ideal element I[" << i << "] = " << s << std::endl;
+    omFree(s);
+}
+
+// Map ideal to G.overpoly
+std::cout << "[DEBUG] Mapping ideal to G.overpoly..." << std::endl;
+
+// Create identity permutation for variables
+int nvars = rVar(G.over);
+int *perm = (int*)omAlloc0((nvars + 1) * sizeof(int));
+for (int i = 0; i <= nvars; i++) {
+    perm[i] = i;
+}
+std::cout << "[DEBUG] nvars = " << nvars << std::endl;
+// Create mapped ideal
+ideal I_mapped = idInit(IDELEMS(I), 1);
+std::cout << "[DEBUG] I_mapped initialized" << std::endl;
+// Map each polynomial using p_PermPoly
+for (int i = 0; i < IDELEMS(I); i++) {
+    if (I->m[i]) {
+        std::cout << "[DEBUG] Mapping ideal element I[" << i << "] = " << p_String(I->m[i], G.over) << std::endl;
+        I_mapped->m[i] = p_PermPoly(I, perm, G.over, G.overpoly, NULL, NULL, 0, FALSE);
+        std::cout << "[DEBUG] Mapped ideal element";
+        if (I_mapped->m[i]) {
+            char* s = p_String(I_mapped->m[i], G.overpoly);
+            std::cout << "[DEBUG] Mapped ideal element I_mapped[" << i << "] = " << s << std::endl;
+            omFree(s);
+        }
     }
+}
+
+// Clean up
+omFreeSize((ADDRESS)perm, (nvars + 1) * sizeof(int));
+
+std::cout << "[DEBUG] I_mapped computed" << std::endl;
+for (int i = 0; i < IDELEMS(I_mapped); i++) {
+    if (!I_mapped->m[i]) continue;
+    char* s = p_String(I_mapped->m[i], G.overpoly);
+    std::cout << "[DEBUG] I_mapped[" << i << "] = " << s << std::endl;
+    omFree(s);
+}
+
+// Compute reduced standard basis
+std::cout << "[DEBUG] Computing standard basis in G.overpoly..." << std::endl;
+BOOLEAN redSB = TRUE; // Mimic option(redSB)
+ideal I_std = kStd(I_mapped, NULL, testHomog, NULL, 0, 0, redSB);
+std::cout << "[DEBUG] Standard basis computed" << std::endl;
+for (int i = 0; i < IDELEMS(I_std); i++) {
+    if (!I_std->m[i]) continue;
+    char* s = p_String(I_std->m[i], G.overpoly);
+    std::cout << "[DEBUG] Standard basis element I_std[" << i << "] = " << s << std::endl;
+    omFree(s);
+}
+
+// Cleanup
+id_Delete(&I, G.over);
+
+id_Delete(&I_mapped, G.overpoly);
+id_Delete(&I_std, G.overpoly);
+
+rChangeCurrRing(savedRing);
+std::cout << "[DEBUG] Restored ring: " << rString(currRing) << std::endl;
+
     LabeledGraph G1 = G;
     lists eliminatedVars = (lists)omAlloc(sizeof(sleftv));
     eliminatedVars->Init(IDELEMS(I_std));

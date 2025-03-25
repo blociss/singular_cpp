@@ -1,0 +1,7 @@
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/build_createring/CMakeFiles/singular_cpp.dir
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/build_createring/CMakeFiles/edit_cache.dir
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/build_createring/CMakeFiles/rebuild_cache.dir
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/build_createring/CMakeFiles/list_install_components.dir
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/build_createring/CMakeFiles/install.dir
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/build_createring/CMakeFiles/install/local.dir
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/build_createring/CMakeFiles/install/strip.dir

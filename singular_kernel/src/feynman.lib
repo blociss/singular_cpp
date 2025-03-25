@@ -396,17 +396,9 @@ KEYWORDS: Feynman graph
 EXAMPLE:  example balancingIdeal; shows an example
 "
 {
-
-  print("[DEBUG] Entering balancingIdeal");
-  print("[DEBUG] Current ring:"+string(basering));
-  print("[DEBUG] labelgraph:"+string(G));
-
   list v = G.vertices;
-  print("[DEBUG] vertices:"+string(v));
   list e = G.edges;
-  print("[DEBUG] edges:"+string(e));
   list lab = G.labels;
-  print("[DEBUG] labels:"+string(lab));
   int i,j;
   ideal I;
   poly edg;
@@ -450,15 +442,19 @@ KEYWORDS: Feynman graph
 EXAMPLE:  example eliminateVariables; shows an example
 "
 {
+  print("[DEBUG] Entering eliminateVariables");
+  print(basering);
+
   def R1;
   if (defined(basering)) {
     R1 = basering;
   }
+
   def RP=G.overpoly;
-  print("ring RP: ");
+  print("ring RP=G.overpoly: "+string(RP));
   print(RP);
   def R=G.over;
-  print("ring R: ");
+  print("ring R=G.over: "+string(R));
   print(R);
   setring R;
   ideal I = balancingIdeal(G);
@@ -466,7 +462,7 @@ EXAMPLE:  example eliminateVariables; shows an example
   print(I);
 
   setring RP;
-  print("ring RP: ");
+  print("ring RP=setring RP: "+string(RP));
   print(RP);
   print("ideal I before mapping");
   print(I);

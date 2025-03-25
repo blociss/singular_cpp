@@ -15,7 +15,6 @@ int main() {
 
     Graph G = makeGraph(vertices, edges);
     LabeledGraph lG = labelGraph(G, 0);
-    rChangeCurrRing(lG.over);
     std::cout << "[DEBUG] Eliminating variables...\n";
     LabeledGraph lG1 = eliminateVariables(lG);
     std::cout << "[DEBUG] Eliminated variables...\n";
