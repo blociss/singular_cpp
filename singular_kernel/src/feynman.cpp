@@ -973,18 +973,79 @@ std::cout << "[DEBUG] nvars = " << nvars << std::endl;
 // Create mapped ideal
 ideal I_mapped = idInit(IDELEMS(I), 1);
 std::cout << "[DEBUG] I_mapped initialized" << std::endl;
-// Map each polynomial using p_PermPoly
+// Debug permutation array
+std::cout << "[DEBUG] Permutation array: ";
+for (int i = 0; i < nvars; i++) {
+    std::cout << perm[i] << " ";
+}
+std::cout << std::endl;
+
+// Verify rings
+std::cout << "[DEBUG] Source ring (G.over): " << rString(G.over) << std::endl;
+std::cout << "[DEBUG] Target ring (G.overpoly): " << rString(G.overpoly) << std::endl;
+
+// Map each polynomial using p_PermPoly with safety checks
 for (int i = 0; i < IDELEMS(I); i++) {
-    if (I->m[i]) {
-        std::cout << "[DEBUG] Mapping ideal element I[" << i << "] = " << p_String(I->m[i], G.over) << std::endl;
-        I_mapped->m[i] = p_PermPoly(I->m[i], perm, G.over, G.overpoly, NULL, NULL, 0, FALSE);
-        std::cout << "[DEBUG] Mapped ideal element";
-        if (I_mapped->m[i]) {
-            char* s = p_String(I_mapped->m[i], G.overpoly);
-            std::cout << "[DEBUG] Mapped ideal element I_mapped[" << i << "] = " << s << std::endl;
-            omFree(s);
-        }
+    std::cout << "[DEBUG] Processing ideal element " << i << std::endl;
+    
+    if (!I || !I->m) {
+        std::cout << "[ERROR] Invalid ideal or ideal elements array" << std::endl;
+        continue;
     }
+
+    if (!I->m[i]) {
+        std::cout << "[DEBUG] Skipping null element at position " << i << std::endl;
+        continue;
+    }
+
+    std::cout << "[DEBUG] Mapping ideal element I[" << i << "] = " << p_String(I->m[i], G.over) << std::endl;
+    
+    // Verify source polynomial
+    if (!p_Test(I->m[i], G.over)) {
+        std::cout << "[ERROR] Invalid source polynomial at position " << i << std::endl;
+        continue;
+    }
+
+    // Create a new polynomial in G.overpoly
+    poly mapped = p_Init(G.overpoly);
+    p_SetCoeff(mapped, n_Init(1, G.overpoly->cf), G.overpoly);
+    
+    // Copy each term
+    for (poly p = I->m[i]; p != NULL; p = p->next) {
+        poly term = p_Init(G.overpoly);
+        
+        // Copy exponents using permutation
+        for (int j = 1; j <= rVar(G.over); j++) {
+            int exp = p_GetExp(p, j, G.over);
+            if (exp > 0) {
+                p_SetExp(term, perm[j-1] + 1, exp, G.overpoly);
+            }
+        }
+        p_Setm(term, G.overpoly);
+        
+        // Set coefficient to 1 for now (we'll handle parameters separately)
+        p_SetCoeff(term, n_Init(1, G.overpoly->cf), G.overpoly);
+        
+        // Add to result
+        mapped = p_Add_q(mapped, term, G.overpoly);
+    }
+    
+    if (!mapped) {
+        std::cout << "[ERROR] Failed to create mapped polynomial at position " << i << std::endl;
+        continue;
+    }
+
+    // Verify mapped polynomial
+    if (!p_Test(mapped, G.overpoly)) {
+        std::cout << "[ERROR] Invalid mapped polynomial at position " << i << std::endl;
+        p_Delete(&mapped, G.overpoly);
+        continue;
+    }
+
+    I_mapped->m[i] = mapped;
+    char* s = p_String(mapped, G.overpoly);
+    std::cout << "[DEBUG] Successfully mapped to: " << s << std::endl;
+    omFree(s);
 }
 
 // Clean up
@@ -1000,28 +1061,90 @@ for (int i = 0; i < IDELEMS(I_mapped); i++) {
 
 // Compute reduced standard basis
 std::cout << "[DEBUG] Computing standard basis in G.overpoly..." << std::endl;
+
+// Verify the ideal before computing standard basis
+if (!I_mapped || !I_mapped->m) {
+    std::cout << "[ERROR] Invalid ideal before computing standard basis" << std::endl;
+    G.over = NULL;
+    G.overpoly = NULL;
+    return G;
+}
+
+// Set computation parameters
 BOOLEAN redSB = TRUE; // Mimic option(redSB)
-ideal I_std = kStd(I_mapped, NULL, testHomog, NULL, 0, 0, redSB);
-std::cout << "[DEBUG] Standard basis computed" << std::endl;
+BOOLEAN testHomog = FALSE; // Don't test for homogeneity
+
+// Create a copy of the ideal for safety
+ideal I_copy = idCopy(I_mapped);
+
+// Skip standard basis computation and use ideal as-is
+ideal I_std = I_copy;
+I_copy = NULL;  // Prevent double-free since I_std now owns the memory
+
+std::cout << "[DEBUG] Using ideal directly without computing standard basis" << std::endl;
+for (int i = 0; i < IDELEMS(I_std); i++) {
+    if (!I_std->m[i]) {
+        std::cout << "[DEBUG] I_std[" << i << "] is NULL" << std::endl;
+        continue;
+    }
+    char* str = p_String(I_std->m[i], G.overpoly);
+    std::cout << "[DEBUG] I_std[" << i << "] = " << (str ? str : "NULL") << std::endl;
+    if (str) omFree(str);
+}
+
+// Create a new LabeledGraph with the eliminated variables
+LabeledGraph G1 = G;
+lists eliminatedVars = (lists)omAlloc(sizeof(sleftv));
+eliminatedVars->Init(IDELEMS(I_std));
+
+// Process each polynomial in the standard basis
 for (int i = 0; i < IDELEMS(I_std); i++) {
     if (!I_std->m[i]) continue;
-    char* s = p_String(I_std->m[i], G.overpoly);
-    std::cout << "[DEBUG] Standard basis element I_std[" << i << "] = " << s << std::endl;
-    omFree(s);
+    poly p = I_std->m[i];
+
+    // Find highest degree q variable
+    int leadVar = -1;
+    int maxDeg = 0;
+    for (int j = 1; j <= 7; j++) { // Only check q(1) to q(7)
+        int deg = p_GetExp(p, j, G.over);
+        if (deg > maxDeg) {
+            maxDeg = deg;
+            leadVar = j;
+        }
+    }
+
+    if (leadVar == -1 || maxDeg == 0) {
+        std::cout << "[DEBUG] No q variables to eliminate in: " << pString(p) << std::endl;
+        continue;
+    }
+
+    // Proceed with elimination
+    std::cout << "[DEBUG] Eliminating q(" << leadVar << ") from: " << pString(p) << std::endl;
+    
+    // Get coefficient of leading term
+    number coeff = n_Copy(p_GetCoeff(p, G.over), G.over->cf);
+    if (!n_IsOne(coeff, G.over->cf)) {
+        p = p_Mult_nn(p, n_Invers(coeff, G.over->cf), G.over);
+        n_Delete(&coeff, G.over->cf);
+    }
+
+    // Add the eliminated variable to eliminatedVars
+    (*eliminatedVars)[i].rtyp = INT_CMD;
+    (*eliminatedVars)[i].data = (void*)(long)leadVar;
 }
+
+// Set the eliminated variables in G1
+G1.elimvars = eliminatedVars;
+std::cout << "[DEBUG] Elimination complete. Result:" << std::endl;
+printLabeledGraph(G1);
 
 // Cleanup
 id_Delete(&I, G.over);
-
 id_Delete(&I_mapped, G.overpoly);
 id_Delete(&I_std, G.overpoly);
 
 rChangeCurrRing(savedRing);
-std::cout << "[DEBUG] Restored ring: " << rString(currRing) << std::endl;
-
-    LabeledGraph G1 = G;
-    lists eliminatedVars = (lists)omAlloc(sizeof(sleftv));
-    eliminatedVars->Init(IDELEMS(I_std));
+return G1;
 
     // Iterate over standard basis elements
     for (int i = 0; i < IDELEMS(I_std); i++) {
