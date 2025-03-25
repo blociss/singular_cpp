@@ -1124,7 +1124,6 @@ graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1
   def R1 = lG1.over;
   setring R1;
   eliminateVariables(lG1);
-
 proc eliminateVariables(labeledgraph G)
 "USAGE:  eliminateVariables(G); G labeledgraph@*
 ASSUME:  G is a labeled graph
@@ -1147,7 +1146,6 @@ EXAMPLE:  example eliminateVariables; shows an example
   ideal I = balancingIdeal(G);
   print("Balancing ideal computed");
   print(I);
-
   setring RP;
   print("ring RP: ");
   print(RP);
@@ -1196,15 +1194,236 @@ EXAMPLE:  example eliminateVariables; shows an example
   kill I;
   //if (ringdef){setring R1;}
 return(G1);}
+  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);$
+LIB "feynman.lib";
+  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+proc eliminateVariables(labeledgraph G)
+"USAGE:  eliminateVariables(G); G labeledgraph@*
+ASSUME:  G is a labeled graph
+RETURN:  labeled graph with variables of the bounded edges eliminated according to balancing condition
+KEYWORDS: Feynman graph
+EXAMPLE:  example eliminateVariables; shows an example
+"
+{
+  print("[DEBUG] Entering eliminateVariables");
+  print(basering);
+  def R1;
+  if (defined(basering)) {
+    R1 = basering;
+  }
+  def RP=G.overpoly;
+  print("ring RP=G.overpoly: "+string(RP));
+  print(RP);
+  def R=G.over;
+  print("ring R=G.over: "+string(R));
+  print(R);
+  setring R;
+  ideal I = balancingIdeal(G);
+  print("Balancing ideal computed");
+  print(I);
+  setring RP;
+  print("ring RP=setring RP: "+string(RP));
+  print(RP);
+  print("ideal I before mapping");
+  print(I);
+  print("nvars R=G.over: "+string(nvars(R)));
+  print("npars R=G.over: "+string(npars(R)));
+  print("nvars RP=G.overpoly: "+string(nvars(RP)));
+  print("npars RP=G.overpoly: "+string(npars(RP)));
+  
+  ideal I = imap(R,I);
+  print("ideal I after mapping");
+  print(I);
+  option(redSB);
+  I=std(I);
+  print("computing Std ideal");
+  print(I);
+  poly ld;
+  poly ta;
+  labeledgraph G1=G;
+  print(" labelgraph G1 computed");
+  print(G1);
+  list eliminatedVariables;
+  for (int i = 1; i<=size(I);i++){
+    print(" computing ld and ta");
+    print(I[i]);
+    ld=lead(I[i]);
+    ta=ld-I[i];
+    print(ld);
+    print(ta);
+    setring R;
+    poly ld = imap(RP,ld);
+    eliminatedVariables[i]=ld;
+    poly ta = imap(RP,ta);
+    print(" computing after mapping");
+    print(ld);
+    print(ta);
+    print("G1 before substituteGraph");
+    print(G1);
+    G1=substituteGraph(G1,ld,ta);
+    print("G1 after substituteGraph");
+    print(G1);
+    kill ld,ta;
+    setring RP; 
+  ;}
+  setring R;
+  kill I;
+  G1.elimvars=eliminatedVariables;
+  kill eliminatedVariables;
+  setring RP;
+  kill I;
+  //if (ringdef){setring R1;}
+return(G1);}
+graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+$
+LIB "feynman.lib";
+  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+=
+$
+LIB "feynman.lib";
+graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+$
+LIB "feynman.lib";
+ 
+  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+$
+LIB "feynman.lib";
+  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+$
+LIB "feynman.lib";
+graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+$
+LIB "feynman.lib";
+graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  labeledgraph lG1 = labelGraph(G1,0);
+  def R1 = lG1.over;
+  setring R1;
+  eliminateVariables(lG1);
+
+
+proc eliminateVariables(labeledgraph G)
+"USAGE:  eliminateVariables(G); G labeledgraph@*
+ASSUME:  G is a labeled graph
+RETURN:  labeled graph with variables of the bounded edges eliminated according to balancing condition
+KEYWORDS: Feynman graph
+EXAMPLE:  example eliminateVariables; shows an example
+"
+{
+  print("[DEBUG] Entering eliminateVariables");
+  print(basering);
+
+  def R1;
+  if (defined(basering)) {
+    R1 = basering;
+  }
+
+  def RP=G.overpoly;
+  print("ring RP=G.overpoly: "+string(RP));
+  print(RP);
+  def R=G.over;
+  print("ring R=G.over: "+string(R));
+  print(R);
+  setring R;
+  ideal I = balancingIdeal(G);
+  print("Balancing ideal computed");
+  print(I);
+
+  setring RP;
+  print("ring RP=setring RP: "+string(RP));
+  print(RP);
+  print("ideal I before mapping");
+  print(I);
+  print("nvars R=G.over: "+string(nvars(R)));
+  print("npars R=G.over: "+string(npars(R)));
+  print("nvars RP=G.overpoly: "+string(nvars(RP)));
+  print("npars RP=G.overpoly: "+string(npars(RP)));
+  
+  ideal I = imap(R,I);
+  print("ideal I after mapping");
+  print(I);
+  option(redSB);
+  I=std(I);
+  print("computing Std ideal");
+  print(I);
+  poly ld;
+  poly ta;
+  labeledgraph G1=G;
+  print(" labelgraph G1 computed");
+  print(G1);
+  list eliminatedVariables;
+  for (int i = 1; i<=size(I);i++){
+    print(" computing ld and ta");
+    print(I[i]);
+    ld=lead(I[i]);
+    print("ld[i] = ");
+    print(ld);
+    ta=ld-I[i]; 
+    print("ta[i] = ");
+    print(ta);
+    setring R;
+    poly ld = imap(RP,ld);
+    print("ld_in_R[i] = ");
+    print(ld);
+    eliminatedVariables[i]=ld;
+    poly ta = imap(RP,ta);
+    print("ta_in_R[i] = ");
+    print(ta);
+    G1=substituteGraph(G1,ld,ta);
+    print("G1 after substituteGraph");
+    print(G1);
+    kill ld,ta;
+    setring RP; 
+  ;}
+  setring R;
+  kill I;
+  G1.elimvars=eliminatedVariables;
+  kill eliminatedVariables;
+  setring RP;
+  kill I;
+  //if (ringdef){setring R1;}
+return(G1);}
+
 
   graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
   labeledgraph lG1 = labelGraph(G1,0);
   def R1 = lG1.over;
   setring R1;
   eliminateVariables(lG1);
-
-  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
-  labeledgraph lG1 = labelGraph(G1,0);
-  def R1 = lG1.over;
-  setring R1;
-  eliminateVariables(lG1);$
+$

@@ -12,7 +12,11 @@ int main() {
     int boundedEdges[][2] = {{1,2},{3,6},{4,5},{1,6},{2,3},{5,6},{3,4}};
     int unboundedEdges[] = {1, 2, 5, 4};
     lists edges = createEdgeList(boundedEdges, 7, unboundedEdges, 4);
-
+    std::cout << "[DEBUG] Current ring: " << rString(currRing) << std::endl;
+    LabeledGraph lg = makeLabeledGraph(vertices, edges, currRing, NULL, currRing);
+    std::cout << "[DEBUG] printing labelgraph\n";
+    printLabeledGraph(lg);
+    std::cout << "[DEBUG] making graph\n";
     Graph G = makeGraph(vertices, edges);
     LabeledGraph lG = labelGraph(G, 0);
     std::cout << "[DEBUG] Eliminating variables...\n";

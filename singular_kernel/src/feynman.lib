@@ -466,6 +466,7 @@ EXAMPLE:  example eliminateVariables; shows an example
   print(RP);
   print("ideal I before mapping");
   print(I);
+
   ideal I = imap(R,I);
   print("ideal I after mapping");
   print(I);
@@ -476,25 +477,24 @@ EXAMPLE:  example eliminateVariables; shows an example
   poly ld;
   poly ta;
   labeledgraph G1=G;
-  print(" labelgraph G1 computed");
-  print(G1);
   list eliminatedVariables;
   for (int i = 1; i<=size(I);i++){
     print(" computing ld and ta");
     print(I[i]);
     ld=lead(I[i]);
-    ta=ld-I[i];
+    print("ld["+string(i)+"] = ");
     print(ld);
+    ta=ld-I[i]; 
+    print("ta["+string(i)+"] = ");
     print(ta);
     setring R;
     poly ld = imap(RP,ld);
+    print("ld_in_R["+string(i)+"] = ");
+    print(ld);
     eliminatedVariables[i]=ld;
     poly ta = imap(RP,ta);
-    print(" computing after mapping");
-    print(ld);
+    print("ta_in_R["+string(i)+"] = ");
     print(ta);
-    print("G1 before substituteGraph");
-    print(G1);
     G1=substituteGraph(G1,ld,ta);
     print("G1 after substituteGraph");
     print(G1);
@@ -603,6 +603,13 @@ EXAMPLE:  example eliminateVariables; shows an example
 {
   list L=G.labels;
   for (int i = 1; i<=size(L);i++){
+   /*  print("Substituting  ");
+    print(a);
+    print(" by ");
+    print(b);
+    print(" in ");
+    print(L[i]);
+    print("\n"); */
     L[i]=subst(L[i],a,b);
   }
   labeledgraph G1 = makeLabeledGraph(G.vertices,G.edges,G.over,L,G.overpoly);
