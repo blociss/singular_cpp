@@ -70,6 +70,7 @@ LabeledGraph labelGraph(Graph G, int ch);
 ideal balancingIdeal(const LabeledGraph& G);
 LabeledGraph eliminateVariables(LabeledGraph G);
 ideal propagators(const LabeledGraph& G);
+ideal feynmanDenominators(const LabeledGraph& G);
 lists ISP(const LabeledGraph& G);
 void removeElimVars(LabeledGraph& G);
 // Compute Baikov matrix for a labeled graph
@@ -99,6 +100,7 @@ LabeledGraph makeLabeledGraph(lists vertices, lists edges, ring R, lists labels,
 lists createIntList(int* values, int size);
 lists createEdgeList(int edges[][2], int size, int singleEdges[], int singleSize);
 void printLabeledGraph(const LabeledGraph& G);
+void printIdeal(const ideal I);
 ideal balancingIdeal(const LabeledGraph& G);
 LabeledGraph substituteGraph(LabeledGraph G, poly lhs, poly rhs);
 LabeledGraph eliminateVariables(LabeledGraph G);
