@@ -163,16 +163,12 @@ Graph makeGraph(lists vertices, lists edges) {
 }
 // makeLabeledGraph: Safely create a labeled graph with labels correctly initialized in ring R
 LabeledGraph makeLabeledGraph(lists vertices, lists edges, ring R, lists labels, ring Rpoly) {
-    std::cout << "[DEBUG] Entering makeLabeledGraph\n";
-
-    LabeledGraph G;
-    std::cout << "[DEBUG] Setting vertices\n";
+    std::cout << "[DEBUG] Entering makeLabeledGraph\n";    LabeledGraph G;
     G.vertices = vertices;
     G.edges = edges;
 
     // Save the original ring context
     ring savedRing = currRing;
-    std::cout << "[DEBUG] Current ring after setting R= " << rString(R) << std::endl;
     // Set ring R as current and copy it
     rChangeCurrRing(R);
     G.over = rCopy(R);
@@ -207,7 +203,6 @@ LabeledGraph makeLabeledGraph(lists vertices, lists edges, ring R, lists labels,
     // Restore the original ring
     rChangeCurrRing(savedRing);
 
-    std::cout << "[DEBUG] Exiting makeLabeledGraph\n";
     return G;
 }
 
@@ -718,31 +713,8 @@ void removeElimVars(LabeledGraph& G) {
     std::cout << "[DEBUG] Switching back to old ring" << std::endl;
     rChangeCurrRing(oldRing);
     std::cout << "[DEBUG] Exiting removeElimVars" << std::endl;
-}
-// Helper function to get the variable index from a polynomial
-int getVariableIndex(poly p, ring r) {
-    if (!p) return 0;
-
-    // First try to find a variable in the leading term
-    for (int j = 1; j <= rVar(r); j++) {
-        if (p_GetExp(p, j, r) > 0) {
-            return j;
-        }
     }
 
-    // If no variable in leading term, try rest of polynomial
-    poly iter = pNext(p);
-    while (iter) {
-        for (int j = 1; j <= rVar(r); j++) {
-            if (p_GetExp(iter, j, r) > 0) {
-                return j;
-            }
-        }
-        iter = pNext(iter);
-    }
-
-    return 0; // No variable found (e.g., constant polynomial)
-}
 
 
 LabeledGraph labelGraph(Graph G, int ch) {
@@ -858,69 +830,9 @@ for (int i = 0; i <= G.edges->nr; i++) {
 
     return lG;
 }
-// Substitute one polynomial for another in a labeled graph
-LabeledGraph substituteGraph(LabeledGraph G, poly a, poly b) {
-    ring savedRing = currRing;
-    rChangeCurrRing(G.over);
-    std::cout << "[DEBUG] Entering substituteGraph\n";
 
-    // Create new label list
-    lists L = (lists)omAlloc0(sizeof(slists));
-    L->Init(G.labels->nr + 1);
-    L->nr = G.labels->nr;
 
-    // Print initial labels
-    for (int i = 0; i <= G.labels->nr; i++) {
-        std::cout << "[DEBUG] Label " << i << ": " << pString((poly)G.labels->m[i].Data()) << "\n";
-    }
 
-    // Get the variable index from polynomial a
-    int var = getVariableIndex(a, G.over);
-    std::cout << "[DEBUG] Variable index for substitution: " << var << std::endl;
-
-    // For each label in G.labels, substitute a with b
-    for (int i = 0; i <= G.labels->nr; i++) {
-        L->m[i].Init();
-        L->m[i].rtyp = POLY_CMD;
-        poly label = (poly)G.labels->m[i].Data();
-        if (!label) {
-            L->m[i].data = NULL;
-            continue;
-        }
-
-        // Print debug info
-        std::cout << "[DEBUG] Label " << i << " before: " << pString(label) << "\n";
-        std::cout << "[DEBUG] Substituting " << pString(a) 
-                  << " by " << pString(b) << " in " << pString(label) << "\n";
-        std::cout << "[DEBUG] Current ring: " << rString(currRing) << "\n";
-
-        // Create result polynomial
-        poly result;
-        if (var == 0) {
-            // If no variable found, copy label unchanged
-            result = p_Copy(label, G.over);
-        } else {
-            // Do substitution using Singular's built-in function
-            // First, ensure we're in the correct ring
-            rChangeCurrRing(G.over);
-            result = p_Subst(p_Copy(label, G.over), var, p_Copy(b, G.over), G.over);
-
-            // Now normalize the result
-            if (result) {
-                p_Normalize(result, G.over);
-            }
-        }
-
-        // Store result and print debug
-        L->m[i].data = result;
-        std::cout << "[DEBUG] Label " << i << " after: " << pString(result) << "\n";
-    }
-
-    // Create new labeled graph
-    LabeledGraph G1 = makeLabeledGraph(G.vertices, G.edges, G.over, L, G.overpoly);
-    rChangeCurrRing(savedRing);
-    return G1;
-}
 
 
 
@@ -1000,23 +912,79 @@ ideal balancingIdeal(const LabeledGraph& G) {
     std::cout << "[DEBUG] Exiting balancingIdeal\n";
     return I;
 }
-poly poly_imap_via_string(poly pOld, ring srcRing, ring dstRing)
-{
-    if (!pOld) return nullptr;
-    rChangeCurrRing(srcRing);
-    char* s = p_String(pOld, srcRing);
 
-    rChangeCurrRing(dstRing);
-    poly pNew = nullptr;
-    const char* rest = p_Read(s, pNew, dstRing);
-    omFree(s);
+// Substitute one polynomial for another using p_SubstPoly
+poly substitutePoly(poly label, poly a, poly b, ring r) {
+    if (!label || !a || !b) return NULL;
+    
+    // Create coefficient mapping function
+    nMapFunc nMap = [](number n, const coeffs cf1, const coeffs cf2) -> number {
+        if (n == NULL) return NULL;
+        if (n_IsZero(n, cf1)) return n_Init(0, cf2);
+        if (n_IsOne(n, cf1)) return n_Init(1, cf2);
+        if (n_IsMOne(n, cf1)) return n_Init(-1, cf2);
+        return n_Copy(n, cf1);
+    };
 
-    if (!pNew)
-    {
-        std::cerr << "[ERROR] p_Read failed\n";
-        return nullptr;
+    // Get variable index from polynomial a
+    int var = 0;
+    for (int j = 1; j <= rVar(r); j++) {
+        if (p_GetExp(a, j, r) > 0) {
+            var = j;
+            break;
+        }
     }
-    return pNew;
+
+    if (var == 0) return p_Copy(label, r);
+
+    // Check if label is equal to a, if so return b
+    if (p_ComparePolys(label, a, r)) {
+        return p_Copy(b, r);
+    }
+
+    poly result = p_SubstPoly(p_Copy(label, r), var, p_Copy(b, r), r, r, nMap);
+    if (result) p_Normalize(result, r);
+    return result;
+}
+
+LabeledGraph substituteGraph(LabeledGraph G, poly a, poly b) {
+    ring savedRing = currRing;
+    rChangeCurrRing(G.over);
+
+    lists L = (lists)omAlloc0(sizeof(slists));
+    L->Init(G.labels->nr + 1);
+    L->nr = G.labels->nr;
+    std::cout << "[DEBUG] G.labels:\n";
+for(int i = 0; i <= G.labels->nr; i++){
+    std::cout << "[" << i+1 << "] = " << pString((poly)G.labels->m[i].Data()) << "\n";
+}
+    for (int i = 0; i <= G.labels->nr; i++) {
+        L->m[i].Init();
+        L->m[i].rtyp = POLY_CMD;
+        poly label = (poly)G.labels->m[i].Data();
+        if (!label) {
+            L->m[i].data = NULL;
+            continue;
+        }
+
+        std::cout << "Substituting before: ";
+        std::cout << pString(a);
+        std::cout << " by ";
+        std::cout << pString(b);
+        std::cout << " in ";
+        std::cout << pString(label);
+        std::cout << "\n";
+
+        poly result = substitutePoly(label, a, b, G.over);
+        std::cout << "[DEBUG] after Substituted label[" << i+1 << "]:";
+        std::cout << pString(result) << "\n";
+
+        L->m[i].data = result;
+    }
+
+    LabeledGraph G1 = makeLabeledGraph(G.vertices, G.edges, G.over, L, G.overpoly);
+    rChangeCurrRing(savedRing);
+    return G1;
 }
 
 LabeledGraph eliminateVariables(LabeledGraph G) {
@@ -1077,10 +1045,6 @@ for (int i = 0; i < IDELEMS(I_std); i++) {
         continue;
     }
 
-   
-    
-    std::cout << "[DEBUG] f[" << i << "] = " << p_String(f, G.overpoly) << std::endl;
-
     poly ld = p_Head(f, G.overpoly);
     poly ta = p_Sub(p_Copy(ld, G.overpoly), p_Copy(f, G.overpoly), G.overpoly);
     
@@ -1131,15 +1095,9 @@ for (int i = 0; i < IDELEMS(I_std); i++) {
     // Free memory
     omFree(perm);
 
-    std::cout << "[DEBUG] ld_in_R[" << (i+1) << "] = " << p_String(ld_in_R, G.over) << std::endl;
-    std::cout << "[DEBUG] ta_in_R[" << (i+1) << "] = " << p_String(ta_in_R, G.over) << std::endl;
 
     eliminatedVars->m[i].data = p_Copy(ld_in_R, G.over);
-    std::cout << "[DEBUG] eliminatedVars[" << (i+1) << "] = " << p_String((poly)eliminatedVars->m[i].data, G.over) << std::endl;
     G1 = substituteGraph(G1, ld_in_R, ta_in_R);
-    std::cout << "G1 after substituteGraph" << std::endl;
-    printLabeledGraph( substituteGraph(G1, ld_in_R, ta_in_R));
-
     // Clean up
     p_Delete(&ld, G.overpoly);
     p_Delete(&ta, G.overpoly);

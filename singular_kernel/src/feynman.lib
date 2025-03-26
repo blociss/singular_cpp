@@ -434,6 +434,26 @@ example
 }
 
 
+proc substituteGraph(labeledgraph G, poly a, poly b)
+"USAGE:  substituteGraph(G); G labeledgraph@*
+ASSUME:  G is a labeled graph
+RETURN:  substitute the variable a in the labeling by b
+KEYWORDS: Feynman graph
+EXAMPLE:  example substituteGraph; shows an example
+"
+{
+  list L=G.labels;
+  print("L=G.labels");
+  print(L);
+  print("size(L) = " + string(size(L)));
+  for (int i = 1; i<=size(L);i++){
+    print("Substituting " + string(a) + " by " + string(b) + " in " + string(L[i]));
+    L[i]=subst(L[i],a,b);
+    print("[DEBUG] after Substituted label L[" + string(i) + "]: " + string(L[i]));
+  }
+  labeledgraph G1 = makeLabeledGraph(G.vertices,G.edges,G.over,L,G.overpoly);
+return(G1);
+}
 proc eliminateVariables(labeledgraph G)
 "USAGE:  eliminateVariables(G); G labeledgraph@*
 ASSUME:  G is a labeled graph
@@ -464,11 +484,7 @@ EXAMPLE:  example eliminateVariables; shows an example
   setring RP;
   print("ring RP=setring RP: "+string(RP));
   print(RP);
-  print("ideal I before mapping");
-  print(I);
-
   ideal I = imap(R,I);
-  print("ideal I after mapping");
   print(I);
   option(redSB);
   I=std(I);
@@ -588,33 +604,6 @@ S;
 
 
 
-proc substituteGraph(labeledgraph G, poly a, poly b)
-"USAGE:  substituteGraph(G); G labeledgraph@*
-ASSUME:  G is a labeled graph
-RETURN:  substitute the variable a in the labeling by b
-KEYWORDS: Feynman graph
-EXAMPLE:  example substituteGraph; shows an example
-"
-{
-  list L=G.labels;
-  print("L=G.labels");
-  print(L);
-  for (int i = 1; i<=size(L);i++){
-    print("Substituting before: ");
-    print(a);
-    print(" by ");
-    print(b);
-    print(" in ");
-    print(L[i]);
-    print("\n");
-    L[i]=subst(L[i],a,b);
-    print("[DEBUG] after Substituted label:");
-    print(L[i]);
-    print("\n");
-  }
-  labeledgraph G1 = makeLabeledGraph(G.vertices,G.edges,G.over,L,G.overpoly);
-return(G1);
-}
 
 
 

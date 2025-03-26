@@ -106,4 +106,8 @@ ring removeVariable(ring R, int j);
 
 // Create a ring with specified variables and extension field
 ring createRing(char **extNames, int extCount, char **varNames, int varCount, rRingOrder_t varOrdering);
+
+// Helper function to get the first variable index with non-zero exponent
+int getVariableIndex(poly p, ring r);
+
 #endif // FEYNMAN_H

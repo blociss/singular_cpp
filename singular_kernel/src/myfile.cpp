@@ -34,79 +34,29 @@ L=G.labels
 (p(3))
 [11]:
 (p(4))
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in q(1)
-n
-[DEBUG] after Substituted label: q(1)
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in q(2)
-n
-[DEBUG] after Substituted label: q(2)
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in q(3)
-n
-[DEBUG] after Substituted label: q(3)
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in q(4)
-n
-[DEBUG] after Substituted label: q(4)
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in q(5)
-n
-[DEBUG] Substituted label: q(5)
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in q(6)
-n
-[DEBUG] Substituted label: q(6)
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in q(7)
-n
-[DEBUG] Substituted label:      
-q(7)
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in (p(1))
-n
-[DEBUG] Substituted label:
-(p(1))
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in (p(2))
-n
-[DEBUG] Substituted label:
-(p(2))
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in (p(3))
-n
-[DEBUG] Substituted label:
-(p(3))
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in (p(4))
-n
-[DEBUG] Substituted label:
-(-p(1)-p(2)-p(3))
-n
-(p(4))
- by 
-(-p(1)-p(2)-p(3))
- in 
-(p(1))
-n
-[DEBUG] Substituted label:
-(p(1))
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in (p(2))
-n
-[DEBUG] Substituted label:
-(p(2))
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in (p(3))
-n
-[DEBUG] Substituted label:
-(p(3))
-n
-Substituting  (p(4)) by (-p(1)-p(2)-p(3)) in (p(4))
-n
-[DEBUG] Substituted label:
-(-p(1)-p(2)-p(3))
-n
+size(L) = 11
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in q(1)
+[DEBUG] after Substituted label L[1]: q(1)
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in q(2)
+[DEBUG] after Substituted label L[2]: q(2)
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in q(3)
+[DEBUG] after Substituted label L[3]: q(3)
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in q(4)
+[DEBUG] after Substituted label L[4]: q(4)
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in q(5)
+[DEBUG] after Substituted label L[5]: q(5)
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in q(6)
+[DEBUG] after Substituted label L[6]: q(6)
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in q(7)
+[DEBUG] after Substituted label L[7]: q(7)
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in (p(1))
+[DEBUG] after Substituted label L[8]: (p(1))
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in (p(2))
+[DEBUG] after Substituted label L[9]: (p(2))
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in (p(3))
+[DEBUG] after Substituted label L[10]: (p(3))
+Substituting (p(4)) by (-p(1)-p(2)-p(3)) in (p(4))
+[DEBUG] after Substituted label L[11]: (-p(1)-p(2)-p(3))
 G1 after substituteGraph
 [[1, 2], [3, 6], [4, 5], [1, 6], [2, 3], [5, 6], [3, 4], [1], [2], [5], [4]]
 Graph with 6 vertices, 7 bounded edges and 4 unbounded edges
@@ -141,66 +91,29 @@ L=G.labels
    (p(3))
 [11]:
    (-p(1)-p(2)-p(3))
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(1)
-n
-[DEBUG] Substituted label:
-q(1)
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(2)
-n
-[DEBUG] Substituted label:
-q(2)
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(3)
-n
-[DEBUG] Substituted label:
--q(2)+q(1)+(p(1)+p(3))
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(4)
-n
-[DEBUG] Substituted label:
-q(4)
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(5)
-n
-[DEBUG] Substituted label:
-q(5)
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(6)
-n
-[DEBUG] Substituted label:
-q(6)
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(7)
-n
-[DEBUG] Substituted label:
-q(7)
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in (p(1))
-n
-[DEBUG] Substituted label:
-(p(1))
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in (p(2))
-n
-[DEBUG] Substituted label:
-(p(2))
-n
-Substituting  q(3) by -q(2)+q(1)+(p(1)+p(3)) in (p(3))
-n
-[DEBUG] Substituted label:
-(p(3))
-n
-Substituting  
-q(3)
- by 
--q(2)+q(1)+(p(1)+p(3))
- in 
-(-p(1)-p(2)-p(3))
-n
-[DEBUG] Substituted label:
-(-p(1)-p(2)-p(3))
-n
+size(L) = 11
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(1)
+[DEBUG] after Substituted label L[1]: q(1)
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(2)
+[DEBUG] after Substituted label L[2]: q(2)
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(3)
+[DEBUG] after Substituted label L[3]: -q(2)+q(1)+(p(1)+p(3))
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(4)
+[DEBUG] after Substituted label L[4]: q(4)
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(5)
+[DEBUG] after Substituted label L[5]: q(5)
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(6)
+[DEBUG] after Substituted label L[6]: q(6)
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in q(7)
+[DEBUG] after Substituted label L[7]: q(7)
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in (p(1))
+[DEBUG] after Substituted label L[8]: (p(1))
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in (p(2))
+[DEBUG] after Substituted label L[9]: (p(2))
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in (p(3))
+[DEBUG] after Substituted label L[10]: (p(3))
+Substituting q(3) by -q(2)+q(1)+(p(1)+p(3)) in (-p(1)-p(2)-p(3))
+[DEBUG] after Substituted label L[11]: (-p(1)-p(2)-p(3))
 G1 after substituteGraph
 [[1, 2], [3, 6], [4, 5], [1, 6], [2, 3], [5, 6], [3, 4], [1], [2], [5], [4]]
 Graph with 6 vertices, 7 bounded edges and 4 unbounded edges
@@ -235,116 +148,29 @@ L=G.labels
    (p(3))
 [11]:
    (-p(1)-p(2)-p(3))
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-q(1)
-n
-[DEBUG] Substituted label:
-q(1)
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-q(2)
-n
-[DEBUG] Substituted label:
-q(2)
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
--q(2)+q(1)+(p(1)+p(3))
-n
-[DEBUG] Substituted label:
--q(2)+q(1)+(p(1)+p(3))
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-q(4)
-n
-[DEBUG] Substituted label:
--q(1)+(-p(1))
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-q(5)
-n
-[DEBUG] Substituted label:
-q(5)
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-q(6)
-n
-[DEBUG] Substituted label:
-q(6)
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-q(7)
-n
-[DEBUG] Substituted label:
-q(7)
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-(p(1))
-n
-[DEBUG] Substituted label:
-(p(1))
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-(p(2))
-n
-[DEBUG] Substituted label:
-(p(2))
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-(p(3))
-n
-[DEBUG] Substituted label:
-(p(3))
-n
-Substituting  
-q(4)
- by 
--q(1)+(-p(1))
- in 
-(-p(1)-p(2)-p(3))
-n
-[DEBUG] Substituted label:
-(-p(1)-p(2)-p(3))
-n
+size(L) = 11
+Substituting q(4) by -q(1)+(-p(1)) in q(1)
+[DEBUG] after Substituted label L[1]: q(1)
+Substituting q(4) by -q(1)+(-p(1)) in q(2)
+[DEBUG] after Substituted label L[2]: q(2)
+Substituting q(4) by -q(1)+(-p(1)) in -q(2)+q(1)+(p(1)+p(3))
+[DEBUG] after Substituted label L[3]: -q(2)+q(1)+(p(1)+p(3))
+Substituting q(4) by -q(1)+(-p(1)) in q(4)
+[DEBUG] after Substituted label L[4]: -q(1)+(-p(1))
+Substituting q(4) by -q(1)+(-p(1)) in q(5)
+[DEBUG] after Substituted label L[5]: q(5)
+Substituting q(4) by -q(1)+(-p(1)) in q(6)
+[DEBUG] after Substituted label L[6]: q(6)
+Substituting q(4) by -q(1)+(-p(1)) in q(7)
+[DEBUG] after Substituted label L[7]: q(7)
+Substituting q(4) by -q(1)+(-p(1)) in (p(1))
+[DEBUG] after Substituted label L[8]: (p(1))
+Substituting q(4) by -q(1)+(-p(1)) in (p(2))
+[DEBUG] after Substituted label L[9]: (p(2))
+Substituting q(4) by -q(1)+(-p(1)) in (p(3))
+[DEBUG] after Substituted label L[10]: (p(3))
+Substituting q(4) by -q(1)+(-p(1)) in (-p(1)-p(2)-p(3))
+[DEBUG] after Substituted label L[11]: (-p(1)-p(2)-p(3))
 G1 after substituteGraph
 [[1, 2], [3, 6], [4, 5], [1, 6], [2, 3], [5, 6], [3, 4], [1], [2], [5], [4]]
 Graph with 6 vertices, 7 bounded edges and 4 unbounded edges
@@ -379,116 +205,29 @@ L=G.labels
    (p(3))
 [11]:
    (-p(1)-p(2)-p(3))
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-q(1)
-n
-[DEBUG] Substituted label:
-q(1)
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-q(2)
-n
-[DEBUG] Substituted label:
-q(2)
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
--q(2)+q(1)+(p(1)+p(3))
-n
-[DEBUG] Substituted label:
--q(2)+q(1)+(p(1)+p(3))
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
--q(1)+(-p(1))
-n
-[DEBUG] Substituted label:
--q(1)+(-p(1))
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-q(5)
-n
-[DEBUG] Substituted label:
-q(1)+(-p(2))
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-q(6)
-n
-[DEBUG] Substituted label:
-q(6)
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-q(7)
-n
-[DEBUG] Substituted label:
-q(7)
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-(p(1))
-n
-[DEBUG] Substituted label:
-(p(1))
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-(p(2))
-n
-[DEBUG] Substituted label:
-(p(2))
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-(p(3))
-n
-[DEBUG] Substituted label:
-(p(3))
-n
-Substituting  
-q(5)
- by 
-q(1)+(-p(2))
- in 
-(-p(1)-p(2)-p(3))
-n
-[DEBUG] Substituted label:
-(-p(1)-p(2)-p(3))
-n
+size(L) = 11
+Substituting q(5) by q(1)+(-p(2)) in q(1)
+[DEBUG] after Substituted label L[1]: q(1)
+Substituting q(5) by q(1)+(-p(2)) in q(2)
+[DEBUG] after Substituted label L[2]: q(2)
+Substituting q(5) by q(1)+(-p(2)) in -q(2)+q(1)+(p(1)+p(3))
+[DEBUG] after Substituted label L[3]: -q(2)+q(1)+(p(1)+p(3))
+Substituting q(5) by q(1)+(-p(2)) in -q(1)+(-p(1))
+[DEBUG] after Substituted label L[4]: -q(1)+(-p(1))
+Substituting q(5) by q(1)+(-p(2)) in q(5)
+[DEBUG] after Substituted label L[5]: q(1)+(-p(2))
+Substituting q(5) by q(1)+(-p(2)) in q(6)
+[DEBUG] after Substituted label L[6]: q(6)
+Substituting q(5) by q(1)+(-p(2)) in q(7)
+[DEBUG] after Substituted label L[7]: q(7)
+Substituting q(5) by q(1)+(-p(2)) in (p(1))
+[DEBUG] after Substituted label L[8]: (p(1))
+Substituting q(5) by q(1)+(-p(2)) in (p(2))
+[DEBUG] after Substituted label L[9]: (p(2))
+Substituting q(5) by q(1)+(-p(2)) in (p(3))
+[DEBUG] after Substituted label L[10]: (p(3))
+Substituting q(5) by q(1)+(-p(2)) in (-p(1)-p(2)-p(3))
+[DEBUG] after Substituted label L[11]: (-p(1)-p(2)-p(3))
 G1 after substituteGraph
 [[1, 2], [3, 6], [4, 5], [1, 6], [2, 3], [5, 6], [3, 4], [1], [2], [5], [4]]
 Graph with 6 vertices, 7 bounded edges and 4 unbounded edges
@@ -523,116 +262,29 @@ L=G.labels
    (p(3))
 [11]:
    (-p(1)-p(2)-p(3))
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-q(1)
-n
-[DEBUG] Substituted label:
-q(1)
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-q(2)
-n
-[DEBUG] Substituted label:
-q(2)
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
--q(2)+q(1)+(p(1)+p(3))
-n
-[DEBUG] Substituted label:
--q(2)+q(1)+(p(1)+p(3))
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
--q(1)+(-p(1))
-n
-[DEBUG] Substituted label:
--q(1)+(-p(1))
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-q(1)+(-p(2))
-n
-[DEBUG] Substituted label:
-q(1)+(-p(2))
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-q(6)
-n
-[DEBUG] Substituted label:
--q(2)+q(1)+(p(1))
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-q(7)
-n
-[DEBUG] Substituted label:
-q(7)
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-(p(1))
-n
-[DEBUG] Substituted label:
-(p(1))
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-(p(2))
-n
-[DEBUG] Substituted label:
-(p(2))
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-(p(3))
-n
-[DEBUG] Substituted label:
-(p(3))
-n
-Substituting  
-q(6)
- by 
--q(2)+q(1)+(p(1))
- in 
-(-p(1)-p(2)-p(3))
-n
-[DEBUG] Substituted label:
-(-p(1)-p(2)-p(3))
-n
+size(L) = 11
+Substituting q(6) by -q(2)+q(1)+(p(1)) in q(1)
+[DEBUG] after Substituted label L[1]: q(1)
+Substituting q(6) by -q(2)+q(1)+(p(1)) in q(2)
+[DEBUG] after Substituted label L[2]: q(2)
+Substituting q(6) by -q(2)+q(1)+(p(1)) in -q(2)+q(1)+(p(1)+p(3))
+[DEBUG] after Substituted label L[3]: -q(2)+q(1)+(p(1)+p(3))
+Substituting q(6) by -q(2)+q(1)+(p(1)) in -q(1)+(-p(1))
+[DEBUG] after Substituted label L[4]: -q(1)+(-p(1))
+Substituting q(6) by -q(2)+q(1)+(p(1)) in q(1)+(-p(2))
+[DEBUG] after Substituted label L[5]: q(1)+(-p(2))
+Substituting q(6) by -q(2)+q(1)+(p(1)) in q(6)
+[DEBUG] after Substituted label L[6]: -q(2)+q(1)+(p(1))
+Substituting q(6) by -q(2)+q(1)+(p(1)) in q(7)
+[DEBUG] after Substituted label L[7]: q(7)
+Substituting q(6) by -q(2)+q(1)+(p(1)) in (p(1))
+[DEBUG] after Substituted label L[8]: (p(1))
+Substituting q(6) by -q(2)+q(1)+(p(1)) in (p(2))
+[DEBUG] after Substituted label L[9]: (p(2))
+Substituting q(6) by -q(2)+q(1)+(p(1)) in (p(3))
+[DEBUG] after Substituted label L[10]: (p(3))
+Substituting q(6) by -q(2)+q(1)+(p(1)) in (-p(1)-p(2)-p(3))
+[DEBUG] after Substituted label L[11]: (-p(1)-p(2)-p(3))
 G1 after substituteGraph
 [[1, 2], [3, 6], [4, 5], [1, 6], [2, 3], [5, 6], [3, 4], [1], [2], [5], [4]]
 Graph with 6 vertices, 7 bounded edges and 4 unbounded edges
@@ -667,116 +319,29 @@ L=G.labels
    (p(3))
 [11]:
    (-p(1)-p(2)-p(3))
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
-q(1)
-n
-[DEBUG] Substituted label:
-q(1)
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
-q(2)
-n
-[DEBUG] Substituted label:
-q(2)
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
--q(2)+q(1)+(p(1)+p(3))
-n
-[DEBUG] Substituted label:
--q(2)+q(1)+(p(1)+p(3))
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
--q(1)+(-p(1))
-n
-[DEBUG] Substituted label:
--q(1)+(-p(1))
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
-q(1)+(-p(2))
-n
-[DEBUG] Substituted label:
-q(1)+(-p(2))
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
--q(2)+q(1)+(p(1))
-n
-[DEBUG] Substituted label:
--q(2)+q(1)+(p(1))
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
-q(7)
-n
-[DEBUG] Substituted label:
--q(2)+q(1)+(-p(2))
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
-(p(1))
-n
-[DEBUG] Substituted label:
-(p(1))
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
-(p(2))
-n
-[DEBUG] Substituted label:
-(p(2))
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
-(p(3))
-n
-[DEBUG] Substituted label:
-(p(3))
-n
-Substituting  
-q(7)
- by 
--q(2)+q(1)+(-p(2))
- in 
-(-p(1)-p(2)-p(3))
-n
-[DEBUG] Substituted label:
-(-p(1)-p(2)-p(3))
-n
+size(L) = 11
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in q(1)
+[DEBUG] after Substituted label L[1]: q(1)
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in q(2)
+[DEBUG] after Substituted label L[2]: q(2)
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in -q(2)+q(1)+(p(1)+p(3))
+[DEBUG] after Substituted label L[3]: -q(2)+q(1)+(p(1)+p(3))
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in -q(1)+(-p(1))
+[DEBUG] after Substituted label L[4]: -q(1)+(-p(1))
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in q(1)+(-p(2))
+[DEBUG] after Substituted label L[5]: q(1)+(-p(2))
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in -q(2)+q(1)+(p(1))
+[DEBUG] after Substituted label L[6]: -q(2)+q(1)+(p(1))
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in q(7)
+[DEBUG] after Substituted label L[7]: -q(2)+q(1)+(-p(2))
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in (p(1))
+[DEBUG] after Substituted label L[8]: (p(1))
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in (p(2))
+[DEBUG] after Substituted label L[9]: (p(2))
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in (p(3))
+[DEBUG] after Substituted label L[10]: (p(3))
+Substituting q(7) by -q(2)+q(1)+(-p(2)) in (-p(1)-p(2)-p(3))
+[DEBUG] after Substituted label L[11]: (-p(1)-p(2)-p(3))
 G1 after substituteGraph
 [[1, 2], [3, 6], [4, 5], [1, 6], [2, 3], [5, 6], [3, 4], [1], [2], [5], [4]]
 Graph with 6 vertices, 7 bounded edges and 4 unbounded edges

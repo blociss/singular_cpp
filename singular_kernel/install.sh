@@ -9,6 +9,7 @@ SOURCE_DIR="$SCRIPT_DIR"
 BUILD_DIR="$SCRIPT_DIR/build_dir"
 INSTALL_PREFIX="$SCRIPT_DIR/install_dir"
 BUILD_TYPE="Release"
+rm -rf "$BUILD_DIR/*" "$INSTALL_PREFIX/*"
 
 mkdir -p "$BUILD_DIR" "$INSTALL_PREFIX"
 
