@@ -1,3 +1,4 @@
+/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build/CMakeFiles/singular_functions.dir
 /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build/CMakeFiles/createring_test.dir
 /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build/CMakeFiles/edit_cache.dir
 /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build/CMakeFiles/rebuild_cache.dir

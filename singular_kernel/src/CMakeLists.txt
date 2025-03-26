@@ -80,6 +80,11 @@ link_directories(
     ${FLINT_HOME}/lib
 )
 
+# Add library for singular functions
+add_library(singular_functions
+    singular_functions.cpp
+)
+
 # Add executable
 add_executable(createring_test 
     createring_test.cpp
@@ -91,6 +96,7 @@ file(GLOB SINGULAR_LIBS
 
 # Link libraries
 target_link_libraries(createring_test 
+    singular_functions
     ${SINGULAR_LIBS} 
     gmp
     flint

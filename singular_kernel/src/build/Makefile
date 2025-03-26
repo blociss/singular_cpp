@@ -162,6 +162,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named singular_functions
+
+# Build rule for target.
+singular_functions: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 singular_functions
+.PHONY : singular_functions
+
+# fast build rule for target.
+singular_functions/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/singular_functions.dir/build.make CMakeFiles/singular_functions.dir/build
+.PHONY : singular_functions/fast
+
+#=============================================================================
 # Target rules for targets named createring_test
 
 # Build rule for target.
@@ -198,6 +211,30 @@ createring_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/createring_test.dir/build.make CMakeFiles/createring_test.dir/createring_test.cpp.s
 .PHONY : createring_test.cpp.s
 
+singular_functions.o: singular_functions.cpp.o
+.PHONY : singular_functions.o
+
+# target to build an object file
+singular_functions.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/singular_functions.dir/build.make CMakeFiles/singular_functions.dir/singular_functions.cpp.o
+.PHONY : singular_functions.cpp.o
+
+singular_functions.i: singular_functions.cpp.i
+.PHONY : singular_functions.i
+
+# target to preprocess a source file
+singular_functions.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/singular_functions.dir/build.make CMakeFiles/singular_functions.dir/singular_functions.cpp.i
+.PHONY : singular_functions.cpp.i
+
+singular_functions.s: singular_functions.cpp.s
+.PHONY : singular_functions.s
+
+# target to generate assembly for a file
+singular_functions.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/singular_functions.dir/build.make CMakeFiles/singular_functions.dir/singular_functions.cpp.s
+.PHONY : singular_functions.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -211,9 +248,13 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... createring_test"
+	@echo "... singular_functions"
 	@echo "... createring_test.o"
 	@echo "... createring_test.i"
 	@echo "... createring_test.s"
+	@echo "... singular_functions.o"
+	@echo "... singular_functions.i"
+	@echo "... singular_functions.s"
 .PHONY : help
 
 

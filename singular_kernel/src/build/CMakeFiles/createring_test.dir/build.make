@@ -92,6 +92,7 @@ createring_test_EXTERNAL_OBJECTS =
 
 createring_test: CMakeFiles/createring_test.dir/createring_test.cpp.o
 createring_test: CMakeFiles/createring_test.dir/build.make
+createring_test: libsingular_functions.a
 createring_test: /home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-4.4.0p2-k7rgdkzo5prqsvxjckejvcdvxgjr64bk/lib/libSingular-4.4.0.so
 createring_test: /home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-4.4.0p2-k7rgdkzo5prqsvxjckejvcdvxgjr64bk/lib/libSingular.so
 createring_test: /home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-4.4.0p2-k7rgdkzo5prqsvxjckejvcdvxgjr64bk/lib/libfactory-4.4.0.so

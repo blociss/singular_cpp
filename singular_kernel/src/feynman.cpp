@@ -721,11 +721,26 @@ void removeElimVars(LabeledGraph& G) {
 }
 // Helper function to get the variable index from a polynomial
 int getVariableIndex(poly p, ring r) {
+    if (!p) return 0;
+
+    // First try to find a variable in the leading term
     for (int j = 1; j <= rVar(r); j++) {
         if (p_GetExp(p, j, r) > 0) {
-            return j; // Return the index of the variable with non-zero exponent
+            return j;
         }
     }
+
+    // If no variable in leading term, try rest of polynomial
+    poly iter = pNext(p);
+    while (iter) {
+        for (int j = 1; j <= rVar(r); j++) {
+            if (p_GetExp(iter, j, r) > 0) {
+                return j;
+            }
+        }
+        iter = pNext(iter);
+    }
+
     return 0; // No variable found (e.g., constant polynomial)
 }
 
@@ -847,11 +862,21 @@ for (int i = 0; i <= G.edges->nr; i++) {
 LabeledGraph substituteGraph(LabeledGraph G, poly a, poly b) {
     ring savedRing = currRing;
     rChangeCurrRing(G.over);
+    std::cout << "[DEBUG] Entering substituteGraph\n";
 
     // Create new label list
     lists L = (lists)omAlloc0(sizeof(slists));
     L->Init(G.labels->nr + 1);
     L->nr = G.labels->nr;
+
+    // Print initial labels
+    for (int i = 0; i <= G.labels->nr; i++) {
+        std::cout << "[DEBUG] Label " << i << ": " << pString((poly)G.labels->m[i].Data()) << "\n";
+    }
+
+    // Get the variable index from polynomial a
+    int var = getVariableIndex(a, G.over);
+    std::cout << "[DEBUG] Variable index for substitution: " << var << std::endl;
 
     // For each label in G.labels, substitute a with b
     for (int i = 0; i <= G.labels->nr; i++) {
@@ -863,37 +888,32 @@ LabeledGraph substituteGraph(LabeledGraph G, poly a, poly b) {
             continue;
         }
 
-        // Get leading term variable
-        int var = 0;
-        for (int j = 1; j <= currRing->N; j++) {
-            if (p_GetExp(a, j, currRing) > 0) {
-                var = j;
-                break;
+        // Print debug info
+        std::cout << "[DEBUG] Label " << i << " before: " << pString(label) << "\n";
+        std::cout << "[DEBUG] Substituting " << pString(a) 
+                  << " by " << pString(b) << " in " << pString(label) << "\n";
+        std::cout << "[DEBUG] Current ring: " << rString(currRing) << "\n";
+
+        // Create result polynomial
+        poly result;
+        if (var == 0) {
+            // If no variable found, copy label unchanged
+            result = p_Copy(label, G.over);
+        } else {
+            // Do substitution using Singular's built-in function
+            // First, ensure we're in the correct ring
+            rChangeCurrRing(G.over);
+            result = p_Subst(p_Copy(label, G.over), var, p_Copy(b, G.over), G.over);
+
+            // Now normalize the result
+            if (result) {
+                p_Normalize(result, G.over);
             }
         }
 
-        if (var == 0) {
-            // If no variable in leading term, try rest of polynomial
-            poly iter = pNext(a);
-            while (iter && var == 0) {
-                for (int j = 1; j <= currRing->N; j++) {
-                    if (p_GetExp(iter, j, currRing) > 0) {
-                        var = j;
-                        break;
-                    }
-                }
-                iter = pNext(iter);
-            }
-        }
-
-        if (var == 0) {
-            // If still no variable found, copy label unchanged
-            L->m[i].data = p_Copy(label, currRing);
-            continue;
-        }
-
-        // Do substitution in current ring
-        L->m[i].data = p_Subst(p_Copy(label, currRing), var, p_Copy(b, currRing), currRing);
+        // Store result and print debug
+        L->m[i].data = result;
+        std::cout << "[DEBUG] Label " << i << " after: " << pString(result) << "\n";
     }
 
     // Create new labeled graph
@@ -1019,6 +1039,7 @@ LabeledGraph eliminateVariables(LabeledGraph G) {
     std::cout << "[DEBUG] Mapping ideal from G.over to G.overpoly" << std::endl;
     int nvars = rVar(G.over);
     int npars = rPar(G.over);
+    std::cout << "[DEBUG] nvars = " << nvars << ", npars = " << npars << std::endl;
     int *perm = (int*)omAlloc0((nvars + 1) * sizeof(int));
     int *par_perm = (int*)omAlloc0((npars + 1) * sizeof(int));
 
@@ -1056,20 +1077,34 @@ for (int i = 0; i < IDELEMS(I_std); i++) {
         continue;
     }
 
+   
+    
     std::cout << "[DEBUG] f[" << i << "] = " << p_String(f, G.overpoly) << std::endl;
 
     poly ld = p_Head(f, G.overpoly);
     poly ta = p_Sub(p_Copy(ld, G.overpoly), p_Copy(f, G.overpoly), G.overpoly);
-    std::cout << "[DEBUG] ld[" << i << "] = " << p_String(ld, G.overpoly) << std::endl;
-    std::cout << "[DEBUG] ta[" << i << "] = " << p_String(ta, G.overpoly) << std::endl;
-
-    // Map polynomials between rings
-    rChangeCurrRing(G.over);
     
-    // Create identity permutation for variables
-    int* perm = (int*)omAlloc0((rVar(G.overpoly)+1)*sizeof(int));
-    for(int j = 1; j <= rVar(G.overpoly); j++) {
-        perm[j] = j;
+    // Map polynomials between rings
+    // Create permutation for variables
+    int nvars = rVar(G.overpoly);
+    int* perm = (int*)omAlloc0((nvars+1)*sizeof(int));
+    
+    int npars1 = rPar(G.over);
+    int nvars1 = rVar(G.over);
+    
+    // Initialize all entries to 0
+    for(int j = 0; j <= nvars; j++) {
+        perm[j] = 0;
+    }
+    
+    // Map coefficients p(i) to negative indices
+    for(int j = 1; j <= npars1; j++) {
+        perm[j] = -j;
+    }
+    
+    // Map variables q(i) to positive indices
+    for(int j = npars1+1; j <= nvars; j++) {
+        perm[j] = j-npars1;
     }
     
     // Create coefficient mapping function
@@ -1096,14 +1131,14 @@ for (int i = 0; i < IDELEMS(I_std); i++) {
     // Free memory
     omFree(perm);
 
-
-    std::cout << "ld_in_R[" << (i+1) << "] = \n" << p_String(ld_in_R, G.over) << std::endl;
-    std::cout << "ta_in_R[" << (i+1) << "] = \n" << p_String(ta_in_R, G.over) << std::endl;
+    std::cout << "[DEBUG] ld_in_R[" << (i+1) << "] = " << p_String(ld_in_R, G.over) << std::endl;
+    std::cout << "[DEBUG] ta_in_R[" << (i+1) << "] = " << p_String(ta_in_R, G.over) << std::endl;
 
     eliminatedVars->m[i].data = p_Copy(ld_in_R, G.over);
+    std::cout << "[DEBUG] eliminatedVars[" << (i+1) << "] = " << p_String((poly)eliminatedVars->m[i].data, G.over) << std::endl;
     G1 = substituteGraph(G1, ld_in_R, ta_in_R);
     std::cout << "G1 after substituteGraph" << std::endl;
-    printLabeledGraph(G1);
+    printLabeledGraph( substituteGraph(G1, ld_in_R, ta_in_R));
 
     // Clean up
     p_Delete(&ld, G.overpoly);

@@ -118,5 +118,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
+  "CMakeFiles/singular_functions.dir/DependInfo.cmake"
   "CMakeFiles/createring_test.dir/DependInfo.cmake"
   )

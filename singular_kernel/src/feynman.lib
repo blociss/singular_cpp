@@ -479,21 +479,16 @@ EXAMPLE:  example eliminateVariables; shows an example
   labeledgraph G1=G;
   list eliminatedVariables;
   for (int i = 1; i<=size(I);i++){
-    print(" computing ld and ta");
     print(I[i]);
     ld=lead(I[i]);
-    print("ld["+string(i)+"] = ");
     print(ld);
     ta=ld-I[i]; 
-    print("ta["+string(i)+"] = ");
     print(ta);
     setring R;
     poly ld = imap(RP,ld);
-    print("ld_in_R["+string(i)+"] = ");
     print(ld);
     eliminatedVariables[i]=ld;
     poly ta = imap(RP,ta);
-    print("ta_in_R["+string(i)+"] = ");
     print(ta);
     G1=substituteGraph(G1,ld,ta);
     print("G1 after substituteGraph");
@@ -598,19 +593,24 @@ proc substituteGraph(labeledgraph G, poly a, poly b)
 ASSUME:  G is a labeled graph
 RETURN:  substitute the variable a in the labeling by b
 KEYWORDS: Feynman graph
-EXAMPLE:  example eliminateVariables; shows an example
+EXAMPLE:  example substituteGraph; shows an example
 "
 {
   list L=G.labels;
+  print("L=G.labels");
+  print(L);
   for (int i = 1; i<=size(L);i++){
-   /*  print("Substituting  ");
+    print("Substituting before: ");
     print(a);
     print(" by ");
     print(b);
     print(" in ");
     print(L[i]);
-    print("\n"); */
+    print("\n");
     L[i]=subst(L[i],a,b);
+    print("[DEBUG] after Substituted label:");
+    print(L[i]);
+    print("\n");
   }
   labeledgraph G1 = makeLabeledGraph(G.vertices,G.edges,G.over,L,G.overpoly);
 return(G1);
