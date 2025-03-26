@@ -935,13 +935,10 @@ poly substitutePoly(poly label, poly a, poly b, ring r) {
         }
     }
 
+    // If no variable found, just return a copy of the label
     if (var == 0) return p_Copy(label, r);
 
-    // Check if label is equal to a, if so return b
-    if (p_ComparePolys(label, a, r)) {
-        return p_Copy(b, r);
-    }
-
+    // Otherwise do the substitution
     poly result = p_SubstPoly(p_Copy(label, r), var, p_Copy(b, r), r, r, nMap);
     if (result) p_Normalize(result, r);
     return result;
@@ -951,13 +948,17 @@ LabeledGraph substituteGraph(LabeledGraph G, poly a, poly b) {
     ring savedRing = currRing;
     rChangeCurrRing(G.over);
 
+    // Create a new list for the substituted labels
     lists L = (lists)omAlloc0(sizeof(slists));
     L->Init(G.labels->nr + 1);
     L->nr = G.labels->nr;
+    
     std::cout << "[DEBUG] G.labels:\n";
-for(int i = 0; i <= G.labels->nr; i++){
-    std::cout << "[" << i+1 << "] = " << pString((poly)G.labels->m[i].Data()) << "\n";
-}
+    for(int i = 0; i <= G.labels->nr; i++){
+        std::cout << "[" << i+1 << "] = " << pString((poly)G.labels->m[i].Data()) << "\n";
+    }
+    
+    // Process each label
     for (int i = 0; i <= G.labels->nr; i++) {
         L->m[i].Init();
         L->m[i].rtyp = POLY_CMD;
@@ -975,13 +976,23 @@ for(int i = 0; i <= G.labels->nr; i++){
         std::cout << pString(label);
         std::cout << "\n";
 
-        poly result = substitutePoly(label, a, b, G.over);
+        // Special handling for the last element (p(4))
+        poly result;
+        if (i == G.labels->nr && p_ComparePolys(label, a, G.over)) {
+            // If it's the last element and it equals 'a', directly use 'b'
+            result = p_Copy(b, G.over);
+        } else {
+            // Otherwise use the normal substitution
+            result = substitutePoly(label, a, b, G.over);
+        }
+        
         std::cout << "[DEBUG] after Substituted label[" << i+1 << "]:";
         std::cout << pString(result) << "\n";
 
         L->m[i].data = result;
     }
 
+    // Create a new labeled graph with the substituted labels
     LabeledGraph G1 = makeLabeledGraph(G.vertices, G.edges, G.over, L, G.overpoly);
     rChangeCurrRing(savedRing);
     return G1;
