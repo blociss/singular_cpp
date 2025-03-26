@@ -1043,9 +1043,7 @@ LabeledGraph eliminateVariables(LabeledGraph G) {
     eliminatedVars->nr = IDELEMS(I_std) - 1;
 
 
-
-
-   for (int i = 0; i < IDELEMS(I_std); i++) {
+for (int i = 0; i < IDELEMS(I_std); i++) {
     eliminatedVars->m[i].Init();
     eliminatedVars->m[i].rtyp = POLY_CMD;
     eliminatedVars->m[i].data = NULL;
@@ -1065,20 +1063,39 @@ LabeledGraph eliminateVariables(LabeledGraph G) {
     std::cout << "[DEBUG] ld[" << i << "] = " << p_String(ld, G.overpoly) << std::endl;
     std::cout << "[DEBUG] ta[" << i << "] = " << p_String(ta, G.overpoly) << std::endl;
 
+    // Map polynomials between rings
     rChangeCurrRing(G.over);
-    int npars = rPar(G.over);
-    int nvars = rVar(G.over);
-    int *perm = (int*)omAlloc0((G.overpoly->N + 1) * sizeof(int));
-    for (int j = 1; j <= nvars; j++) {
-        perm[npars + j] = j;
+    
+    // Create identity permutation for variables
+    int* perm = (int*)omAlloc0((rVar(G.overpoly)+1)*sizeof(int));
+    for(int j = 1; j <= rVar(G.overpoly); j++) {
+        perm[j] = j;
     }
-    int *par_perm = (int*)omAlloc0((npars + 1) * sizeof(int));
-    for (int j = 1; j <= npars; j++) {
-        par_perm[j] = j;
+    
+    // Create coefficient mapping function
+    nMapFunc nMap = [](number n, const coeffs cf1, const coeffs cf2) -> number {
+        if (n == NULL) return NULL;
+        if (n_IsZero(n, cf1)) return n_Init(0, cf2);
+        if (n_IsOne(n, cf1)) return n_Init(1, cf2);
+        if (n_IsMOne(n, cf1)) return n_Init(-1, cf2);
+        return n_Copy(n, cf1);
+    };
+    
+    // Map leading term
+    poly ld_in_R = NULL;
+    if (ld) {
+        ld_in_R = p_PermPoly(ld, perm, G.overpoly, G.over, nMap, NULL, 0, FALSE);
     }
+    
+    // Map tail term
+    poly ta_in_R = NULL;
+    if (ta) {
+        ta_in_R = p_PermPoly(ta, perm, G.overpoly, G.over, nMap, NULL, 0, FALSE);
+    }
+    
+    // Free memory
+    omFree(perm);
 
-    poly ld_in_R = p_PermPoly(ld, perm, G.overpoly, G.over, NULL, par_perm, npars, TRUE);
-    poly ta_in_R = p_PermPoly(ta, perm, G.overpoly, G.over, NULL, par_perm, npars, TRUE);
 
     std::cout << "ld_in_R[" << (i+1) << "] = \n" << p_String(ld_in_R, G.over) << std::endl;
     std::cout << "ta_in_R[" << (i+1) << "] = \n" << p_String(ta_in_R, G.over) << std::endl;
@@ -1088,22 +1105,18 @@ LabeledGraph eliminateVariables(LabeledGraph G) {
     std::cout << "G1 after substituteGraph" << std::endl;
     printLabeledGraph(G1);
 
+    // Clean up
     p_Delete(&ld, G.overpoly);
     p_Delete(&ta, G.overpoly);
     p_Delete(&ld_in_R, G.over);
     p_Delete(&ta_in_R, G.over);
-
-    omFreeSize((ADDRESS)perm, (G.overpoly->N + 1) * sizeof(int));
-    omFreeSize((ADDRESS)par_perm, (npars + 1) * sizeof(int));
-
+    
     rChangeCurrRing(G.overpoly);
 }
     G1.elimvars = eliminatedVars;
     std::cout << "[DEBUG] Elimination complete. Result:" << std::endl;
     printLabeledGraph(G1);
 
-    omFreeSize((ADDRESS)perm, (nvars + 1) * sizeof(int));
-    omFreeSize((ADDRESS)par_perm, (npars + 1) * sizeof(int));
     id_Delete(&I, G.over);
     id_Delete(&I_mapped, G.overpoly);
     id_Delete(&I_std, G.overpoly);
