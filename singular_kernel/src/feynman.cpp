@@ -8,6 +8,7 @@
 #include <singular/polys/simpleideals.h>
 #include <singular/coeffs/numbers.h> // For n_SetMap
 #include <singular/polys/prCopy.h>
+#include <kernel/combinatorics/stairc.h> // For scKBase
 
     ring createRing(char **extNames, int extCount, char **varNames, int varCount, rRingOrder_t varOrdering) {
         // Create base coefficient field
@@ -1199,134 +1200,219 @@ ideal propagators(const LabeledGraph& G) {
     rChangeCurrRing(savedRing);
     return result;
 }
-ideal ISP(const LabeledGraph& G) {
-    // Save the current ring
+void printElimVarsOnly(const lists elimvars, ring r) {
+    if (!elimvars) {
+        std::cout << "[DEBUG] elimvars is NULL" << std::endl;
+        return;
+    }
+
     ring savedRing = currRing;
+    rChangeCurrRing(r);
 
-    // Set to the base ring
+    std::cout << "\nElimination Variables:\n";
+
+    int nr = elimvars->nr;
+    for (int i = 0; i <= nr; ++i) {
+        sleftv* lv = &(elimvars->m[i]);
+
+        std::cout << "[DEBUG] elimvar " << i << ": ";
+
+        if (lv->rtyp == POLY_CMD && lv->data != nullptr) {
+            poly p = (poly)(lv->data);
+            char* str = p_String(p, r);
+            if (str) {
+                std::cout << str << std::endl;
+                omFree(str);
+            } else {
+                std::cout << "(conversion failed)" << std::endl;
+            }
+        } else if (lv->data == nullptr) {
+            std::cout << "NULL polynomial" << std::endl;
+        } else {
+            std::cout << "Non-polynomial or garbage data (rtyp=" << lv->rtyp << ")" << std::endl;
+        }
+    }
+
+    rChangeCurrRing(savedRing);
+}
+
+ideal ISP(const LabeledGraph& G) {
+    std::cout << "[DEBUG] Entering ISP" << std::endl;
+    ring savedRing = currRing;
     rChangeCurrRing(G.over);
-
-    // Compute propagators
+    
+    std::cout << "[DEBUG] G.labels:" << std::endl;
+    printLabeledGraph(G);
+    
+    std::cout << "[DEBUG] Computing propagators J:" << std::endl;
     ideal J = propagators(G);
-
-    // Collect external edge labels (infedges)
+    printIdeal(J);
+    
+    std::cout << "[DEBUG] G.elimvars:" << std::endl;
+    if (G.elimvars) {
+        printElimVarsOnly(G.elimvars, G.over);
+    } else {
+        std::cout << "NULL" << std::endl;
+    }
+    
+    std::cout << "[DEBUG] G.edges:" << std::endl;
+    printLabeledGraph(G);
+    
+    // External edges
+    std::cout << "[DEBUG] Computing infedges:" << std::endl;
     ideal infedges = idInit(G.labels->nr);
     int inf_idx = 0;
     for (int i = 0; i <= G.labels->nr; ++i) {
-        if (G.edges->m[i].Typ() == LIST_CMD && 
+        if (G.edges->m[i].Typ() == LIST_CMD &&
             ((lists)G.edges->m[i].Data())->nr + 1 == 1) {
             poly label = (poly)G.labels->m[i].Data();
             if (label) {
-                infedges->m[inf_idx++] = p_Copy(label, G.over);
+                poly squared = p_Mult_q(p_Copy(label, G.over), p_Copy(label, G.over), G.over);
+                infedges->m[inf_idx++] = squared;
             }
         }
     }
     infedges->ncols = inf_idx;
-
-    // Switch to overpoly ring
+    std::cout << "[DEBUG] infedges:" << std::endl;
+    printIdeal(infedges);
+    
+    // Map to overpoly ring
+    std::cout << "[DEBUG] Mapping to overpoly ring:" << std::endl;
     rChangeCurrRing(G.overpoly);
-
-    // Map J and infedges to overpoly ring
     int nvars_over = rVar(G.over);
     int npars_over = rPar(G.over);
-    
-    // Permutation setup
     int* perm = (int*)omAlloc0((nvars_over + 1) * sizeof(int));
     int* par_perm = (int*)omAlloc0((npars_over + 1) * sizeof(int));
     for (int i = 1; i <= nvars_over; i++) perm[i] = i + npars_over;
     for (int i = 0; i < npars_over; i++) par_perm[i] = i + 1;
-    
-    // Map functions
     nMapFunc nMap = n_SetMap(G.over->cf, G.overpoly->cf);
-    
-    // Map ideals
+
+    std::cout << "[DEBUG] Mapping J to overpoly:" << std::endl;
     ideal J_mapped = id_PermIdeal(J, 1, IDELEMS(J), perm, G.over, G.overpoly, nMap, par_perm, npars_over, FALSE);
+    printIdeal(J_mapped);
+    
+    std::cout << "[DEBUG] Mapping infedges to overpoly:" << std::endl;
     ideal infedges_mapped = id_PermIdeal(infedges, 1, IDELEMS(infedges), perm, G.over, G.overpoly, nMap, par_perm, npars_over, FALSE);
+    printIdeal(infedges_mapped);
+    
+    std::cout << "[DEBUG] Computing infedges_squared:" << std::endl;
+    ideal infedges_squared = id_Mult(infedges_mapped, infedges_mapped, G.overpoly);
+    printIdeal(infedges_squared);
+    
+    std::cout << "[DEBUG] Computing J_combined:" << std::endl;
+    ideal J_combined = id_Add(J_mapped, infedges_squared, G.overpoly);
+    printIdeal(J_combined);
 
-    // Combine ideals and add squared infedges
-    ideal J_combined = id_Add(J_mapped, id_Mult(infedges_mapped, infedges_mapped, G.overpoly), G.overpoly);
-
-    // Safe handling of elimination variables
+    // Handle elimvars
+    std::cout << "[DEBUG] Processing elimination variables:" << std::endl;
+    lists elimMapped = NULL;
     if (G.elimvars) {
-        std::cout << "[DEBUG] Total elimination variables: " << (G.elimvars->nr + 1) << "\n";
+        std::cout << "[DEBUG] Mapping elimination variables:" << std::endl;
+        elimMapped = (lists)omAllocBin(slists_bin);
+        if (!elimMapped) {
+            std::cerr << "[ERROR] Failed to allocate memory for mapped elimination variables" << std::endl;
+            return NULL;
+        }
         
-        // Limit processing to a reasonable number to prevent potential overflow
-        int max_elimvars = std::min(G.elimvars->nr + 1, 10);  // Limit to first 10 variables
+        elimMapped->Init(G.elimvars->nr + 1);
+        elimMapped->nr = G.elimvars->nr;
         
-        for (int i = 0; i < max_elimvars; ++i) {
-            try {
-                // Safely check if this list element is a valid POLY_CMD
-                if (G.elimvars->m[i].Typ() == POLY_CMD) {
-                    poly elim_var = (poly)G.elimvars->m[i].Data();
-                    
-                    if (elim_var) {
-                        // Create a temporary ideal with this elimination variable
-                        ideal temp = idInit(1);
-                        temp->m[0] = p_Copy(elim_var, G.overpoly);
-                        
-                        // Add to combined ideal
-                        ideal new_combined = id_Add(J_combined, temp, G.overpoly);
-                        
-                        // Clean up
-                        id_Delete(&temp, G.overpoly);
-                        id_Delete(&J_combined, G.overpoly);
-                        J_combined = new_combined;
-                        
-                        std::cout << "[DEBUG] Added elimination variable: " << pString(elim_var) << "\n";
-                    }
+        // Create permutation for variables
+        int nvars = rVar(G.over);
+        int npars = rPar(G.over);
+        int* perm = (int*)omAlloc0((nvars + 1) * sizeof(int));
+        int* par_perm = (int*)omAlloc0((npars + 1) * sizeof(int));
+        
+        // Set up permutations
+        for (int i = 1; i <= nvars; i++) perm[i] = i + npars;
+        for (int i = 0; i < npars; i++) par_perm[i] = i + 1;
+        
+        // Create coefficient mapping function
+        nMapFunc nMap = n_SetMap(G.over->cf, G.overpoly->cf);
+        
+        // Map each elimination variable
+        for (int i = 0; i <= G.elimvars->nr; i++) {
+            elimMapped->m[i].Init();
+            elimMapped->m[i].rtyp = G.elimvars->m[i].rtyp;
+            
+            if (G.elimvars->m[i].rtyp == POLY_CMD) {
+                poly p = (poly)G.elimvars->m[i].Data();
+                if (p) {
+                    elimMapped->m[i].data = p_PermPoly(p, perm, G.over, G.overpoly, nMap, par_perm, npars_over, FALSE);
+                    char* s = p_String((poly)elimMapped->m[i].data, G.overpoly);
+                    std::cout << "[DEBUG] Mapped elimvar " << i << ": " << s << std::endl;
+                    omFree(s);
                 }
-            }
-            catch (const std::exception& e) {
-                std::cerr << "[ERROR] Exception processing elimination variable " 
-                          << i << ": " << e.what() << "\n";
-                break;
             }
         }
     }
-    else {
-        std::cout << "[DEBUG] No elimination variables found\n";
-    }
-
-    // Compute standard basis
-    ideal J_std = kStd(J_combined, NULL, testHomog, NULL, NULL, 0, 0);
-
-    // Compute kernel or basis
-lists L = kbase(J_std, 2);
-    // Extract the basis
-ideal I = idInit(L->nr, G.overpoly);
-    for (int i = 0; i < L->nr; ++i) {
-        I->m[i] = (poly)L->m[i].Data();
-    }
-
-    // Switch back to original ring and map result
-    rChangeCurrRing(G.over);
-    nMap = n_SetMap(G.overpoly->cf, G.over->cf);
     
+    if (elimMapped && elimMapped->nr >= 0) {
+        std::cout << "[DEBUG] Adding elimination variables to J_combined:" << std::endl;
+        for (int i = 0; i <= elimMapped->nr; i++) {
+            if (elimMapped->m[i].rtyp == POLY_CMD) {
+                poly p = (poly)elimMapped->m[i].Data();
+                if (p) {
+                    ideal p_ideal = idInit(1);
+                    p_ideal->m[0] = p_Copy(p, G.overpoly);
+                    
+                    ideal new_combined = id_Add(J_combined, p_ideal, G.overpoly);
+                    id_Delete(&p_ideal, G.overpoly);
+                    id_Delete(&J_combined, G.overpoly);
+                    J_combined = new_combined;
+                }
+            }
+        }
+    }
+
+    std::cout << "[DEBUG] Computing standard basis of J_combined:" << std::endl;
+    ideal J_std = kStd(J_combined, NULL, testHomog, NULL, NULL, 0, 0);
+    idSkipZeroes(J_std);
+    printIdeal(J_std);
+
+    std::cout << "[DEBUG] Computing kbase(J_std,2):" << std::endl;
+    ideal L = scKBase(2, J_std);
+    printIdeal(L);
+    
+    std::cout << "[DEBUG] Creating final ideal I:" << std::endl;
+    ideal I = idInit(IDELEMS(L));
+    for (int i = 0; i < IDELEMS(L); ++i) {
+        poly q = (poly)L->m[i];
+        if (q) {
+            I->m[i] = p_Copy(q, G.overpoly);
+        }
+    }
+    printIdeal(I);
+
+    std::cout << "[DEBUG] Mapping back to original ring:" << std::endl;
+    rChangeCurrRing(G.over);
     int nvars_overpoly = rVar(G.overpoly);
     int* perm_back = (int*)omAlloc0((nvars_overpoly + 1) * sizeof(int));
     for (int i = 1; i <= npars_over; i++) perm_back[i] = -i;
-    for (int i = npars_over + 1; i <= nvars_overpoly; i++) 
-        perm_back[i] = i - npars_over;
+    for (int i = npars_over + 1; i <= nvars_overpoly; i++) perm_back[i] = i - npars_over;
+    nMap = n_SetMap(G.overpoly->cf, G.over->cf);
 
     ideal result = id_PermIdeal(I, 1, IDELEMS(I), perm_back, G.overpoly, G.over, nMap, NULL, 0, FALSE);
+    printIdeal(result);
 
     // Cleanup
+    omFree(perm);
+    omFree(par_perm);
+    omFree(perm_back);
     id_Delete(&J, G.over);
     id_Delete(&infedges, G.over);
     id_Delete(&J_mapped, G.overpoly);
     id_Delete(&infedges_mapped, G.overpoly);
+    id_Delete(&infedges_squared, G.overpoly);
     id_Delete(&J_combined, G.overpoly);
     id_Delete(&J_std, G.overpoly);
     id_Delete(&I, G.overpoly);
-    omFree(perm);
-    omFree(par_perm);
-    omFree(perm_back);
-
-    // Restore original ring
+    
     rChangeCurrRing(savedRing);
-
     return result;
 }
+
+
 LabeledGraph computeBaikovMatrix(const Graph& G0) {
     // Convert graph to labeled graph
     LabeledGraph lG = makeLabeledGraph(G0.vertices, G0.edges);

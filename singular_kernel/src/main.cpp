@@ -13,12 +13,12 @@ int main() {
     int boundedEdges[][2] = {{1,3},{1,2},{2,4},{3,4}};
     int unboundedEdges[] = {1, 2, 3, 4};
     lists edges = createEdgeList(boundedEdges, 4, unboundedEdges, 4);*/
- 
+
     int verticesData[] = {1, 2, 3, 4, 5, 6};
     lists vertices = createIntList(verticesData, 6);
 
     int boundedEdges[][2] = {{1,2},{3,6},{4,5},{1,6},{2,3},{5,6},{3,4}};
-    int unboundedEdges[] = {1, 2, 3, 4};
+    int unboundedEdges[] = {1, 2, 5, 4};
     lists edges = createEdgeList(boundedEdges, 7, unboundedEdges, 4); 
     std::cout << "[DEBUG] Current ring: " << rString(currRing) << std::endl;
     LabeledGraph lg = makeLabeledGraph(vertices, edges, currRing, NULL, currRing);
