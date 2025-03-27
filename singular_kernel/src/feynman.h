@@ -71,7 +71,7 @@ ideal balancingIdeal(const LabeledGraph& G);
 LabeledGraph eliminateVariables(LabeledGraph G);
 ideal propagators(const LabeledGraph& G);
 ideal feynmanDenominators(const LabeledGraph& G);
-lists ISP(const LabeledGraph& G);
+ideal ISP(const LabeledGraph& G);
 void removeElimVars(LabeledGraph& G);
 // Compute Baikov matrix for a labeled graph
 /**

@@ -443,13 +443,8 @@ EXAMPLE:  example substituteGraph; shows an example
 "
 {
   list L=G.labels;
-  print("L=G.labels");
-  print(L);
-  print("size(L) = " + string(size(L)));
   for (int i = 1; i<=size(L);i++){
-    print("Substituting " + string(a) + " by " + string(b) + " in " + string(L[i]));
     L[i]=subst(L[i],a,b);
-    print("[DEBUG] after Substituted label L[" + string(i) + "]: " + string(L[i]));
   }
   labeledgraph G1 = makeLabeledGraph(G.vertices,G.edges,G.over,L,G.overpoly);
 return(G1);
@@ -462,53 +457,31 @@ KEYWORDS: Feynman graph
 EXAMPLE:  example eliminateVariables; shows an example
 "
 {
-  print("[DEBUG] Entering eliminateVariables");
-  print(basering);
-
   def R1;
   if (defined(basering)) {
     R1 = basering;
   }
 
   def RP=G.overpoly;
-  print("ring RP=G.overpoly: "+string(RP));
-  print(RP);
   def R=G.over;
-  print("ring R=G.over: "+string(R));
-  print(R);
   setring R;
   ideal I = balancingIdeal(G);
-  print("Balancing ideal computed");
-  print(I);
-
   setring RP;
-  print("ring RP=setring RP: "+string(RP));
-  print(RP);
   ideal I = imap(R,I);
-  print(I);
   option(redSB);
   I=std(I);
-  print("computing Std ideal");
-  print(I);
   poly ld;
   poly ta;
   labeledgraph G1=G;
   list eliminatedVariables;
   for (int i = 1; i<=size(I);i++){
-    print(I[i]);
     ld=lead(I[i]);
-    print(ld);
     ta=ld-I[i]; 
-    print(ta);
     setring R;
     poly ld = imap(RP,ld);
-    print(ld);
     eliminatedVariables[i]=ld;
     poly ta = imap(RP,ta);
-    print(ta);
     G1=substituteGraph(G1,ld,ta);
-    print("G1 after substituteGraph");
-    print(G1);
     kill ld,ta;
     setring RP; 
   ;}
@@ -689,11 +662,16 @@ EXAMPLE:  example ISP; shows an example
   def RP = G.overpoly;
   setring S;
   ideal J = propagators(G);
+  print("propagators");
+  print(J);
   list el = G.elimvars;
   ideal infedges;
   for (i = 1; i<=size(G.edges);i++){
       if(size(G.edges[i])==1){infedges[i]=G.labels[i];}
   }
+  print("infedges");
+  print(infedges);
+
   setring RP;
   ideal J = imap(S,J);
   ideal infedges = imap(S,infedges);
@@ -718,7 +696,6 @@ example
   G1;
   ring R= G1.over;
   setring R;
-  R;
   ISP(G1);
 }
 
