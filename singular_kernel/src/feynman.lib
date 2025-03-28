@@ -657,30 +657,29 @@ KEYWORDS: Feynman graph
 EXAMPLE:  example ISP; shows an example
 "
 {
+  print("[DEBUG] Starting ISP\n");
   int i;
   def S= G.over;
   def RP = G.overpoly;
   setring S;
-  print("G.label");
+  print("[DEBUG] G.label\n");
   print(G.labels);
   ideal J = propagators(G);
-  print("ideal J=progators");
+  print("[DEBUG] ideal J=progators\n");
   print(J);
   list el = G.elimvars;
-  print("list el=G.elimvars");
+  print("[DEBUG] list el=G.elimvars\n");
   print(el);
   ideal infedges;
-  print("G.edges="+string(G.edges));
+  print("[DEBUG] G.edges="+string(G.edges));
 
   for (i = 1; i<=size(G.edges);i++){
 
       if(size(G.edges[i])==1){
         
         infedges[i]=G.labels[i];}
-        print("infedges["+string(i)"]=");
-        print(G.labels[i])
   }
-  print("infedges");
+  print("[DEBUG] infedges\n");
   print(infedges);
 
   setring RP;
@@ -688,31 +687,32 @@ EXAMPLE:  example ISP; shows an example
   
   ideal infedges = imap(S,infedges);
   J=J+infedges^2;
-
-  print("el");
+  print("[DEBUG] J=J+infedges^2\n");
+  print(J);
+  print("[DEBUG] el\n");
   print(el);
   if (not defined(el)){
-    print("el before mapping");
+    print("[DEBUG] el before mapping\n");
     print(el);
     list el = imap(S,el);
-    print("el after mapping");
+    print("[DEBUG] el after mapping\n");
     print(el);
     }
   for (i = 1; i<=size(el);i++){
       J=J+ideal(el[i]);
   }
   J=std(J);
-  print("J=std(J)");
-  print( J);
+  print("[DEBUG] J=std(J)\n");
+  print(J);
   list L = kbase(J,2);
-  print("priting L=kbase(J,2)");
+  print("[DEBUG] priting L=kbase(J,2)\n");
   print(L);
   ideal I = L[1..size(L)];
-  print("I = L[1..size(L)]");
+  print("[DEBUG] I = L[1..size(L)]\n");
   print(I);
   kill J,infedges,el,L;
   setring S;
-  print(" K=imap(RP,I)");
+  print("[DEBUG] K=imap(RP,I)\n");
   ideal K=imap(RP,I);
   print(K);
   return(K);

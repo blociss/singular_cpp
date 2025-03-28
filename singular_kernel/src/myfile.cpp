@@ -54,6 +54,7 @@ list el=G.elimvars
 [6]:
    q(7)
 G.edges=1,2,3,6,4,5,1,6,2,3,5,6,3,4,1,2,5,4
+
 infedges
 0,
 0,
