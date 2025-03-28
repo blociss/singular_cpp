@@ -1235,33 +1235,62 @@ void printElimVarsOnly(const lists elimvars, ring r) {
 
     rChangeCurrRing(savedRing);
 }
+void printListAsString(const char* name, lists L, bool typed = false, int dim = 1) {
+    if (!L) {
+        std::cout << "[DEBUG] " << name << " = <NULL>" << std::endl;
+        return;
+    }
+
+    char* listStr = lString(L, typed, dim);
+    std::cout << "[DEBUG] " << name << " = " << listStr << std::endl;
+    omFree(listStr);
+}
+void printPolyListAsVector(const char* name, lists L, ring r) {
+    if (!L) {
+        std::cout << "[DEBUG] " << name << " = <NULL>" << std::endl;
+        return;
+    }
+
+    ring saved = currRing;
+    rChangeCurrRing(r);
+
+    std::cout << "[DEBUG] " << name << " = [";
+    for (int i = 0; i <= L->nr; i++) {
+        if (L->m[i].rtyp == POLY_CMD && L->m[i].data != nullptr) {
+            poly p = (poly)L->m[i].data;
+            char* str = p_String(p, r);
+            std::cout << str;
+            omFree(str);
+        } else {
+            std::cout << "NULL";
+        }
+        if (i < L->nr) std::cout << ", ";
+    }
+    std::cout << "]" << std::endl;
+
+    rChangeCurrRing(saved);
+}
 
 ideal ISP(const LabeledGraph& G) {
     std::cout << "[DEBUG] Entering ISP" << std::endl;
     ring savedRing = currRing;
     rChangeCurrRing(G.over);
-    
-    std::cout << "[DEBUG] G.labels:" << std::endl;
-    printLabeledGraph(G);
+   // std::cout<<"print vertices"<<std::endl;
+    printListAsString("G.vertices", G.vertices, true, 1);
+    //std::cout<<"print edges"<<std::endl;
+    printListAsString("G.edges", G.edges, true, 1);
+
+    //std::cout<<"print labels"<<std::endl;
+    printPolyListAsVector("G.labels", G.labels, G.over);
     
     std::cout << "[DEBUG] Computing propagators J:" << std::endl;
     ideal J = propagators(G);
     printIdeal(J);
     
-    std::cout << "[DEBUG] G.elimvars:" << std::endl;
-    if (G.elimvars) {
-        printElimVarsOnly(G.elimvars, G.over);
-    } else {
-        std::cout << "NULL" << std::endl;
-    }
-    
-    std::cout << "[DEBUG] G.edges:" << std::endl;
-    printLabeledGraph(G);
-    
     // External edges - modified to match Singular version
     std::cout << "[DEBUG] Computing infedges:" << std::endl;
     int num_edges = G.edges ? G.edges->nr + 1 : 0;
-    ideal infedges = idInit(num_edges, 1);  // Initialize with correct size
+    ideal infedges = idInit(num_edges + 1, 1);  // Initialize with correct size
     for (int i = 0; i < num_edges; ++i) {
         if (G.edges->m[i].Typ() == LIST_CMD &&
             ((lists)G.edges->m[i].Data())->nr + 1 == 1) {
@@ -1297,12 +1326,19 @@ ideal ISP(const LabeledGraph& G) {
     ideal J_with_inf = id_Add(J_mapped, id_Mult(infedges_mapped, infedges_mapped, G.overpoly), G.overpoly);
     printIdeal(J_with_inf);
     
+    //std::cout << "[DEBUG] Elimvars in overpoly:" << std::endl;
+    if (G.elimvars) {
+        lists el = (lists)G.elimvars;
+        printPolyListAsVector("G.elimvars", el, G.over);
+    } else {
+        std::cout << "NULL" << std::endl;
+    }
+
     // Add elimvars if they exist
     if (G.elimvars) {
         std::cout << "[DEBUG] Adding elimvars:" << std::endl;
         lists el = (lists)G.elimvars;
         std::cout << "[DEBUG] Elimvars:" << std::endl;
-        printElimVarsOnly(el, G.over);
         
         std::cout << "[DEBUG] Elimvars in overpoly:" << std::endl;
         // Count actual number of non-NULL polynomials
@@ -1690,8 +1726,6 @@ void printIdeal(const ideal I)
             char* pStr = p_String(p, currRing);
             std::cout << "  [" << i << "]: " << (pStr ? pStr : "null") << std::endl;
             if (pStr) omFree(pStr);
-        } else {
-            std::cout << "  [" << i << "]: 0" << std::endl;
         }
     }
     
