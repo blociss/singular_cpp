@@ -61,7 +61,14 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "bitset": "cpp",
+        "codecvt": "cpp",
+        "complex": "cpp",
+        "cfenv": "cpp",
+        "typeindex": "cpp",
+        "valarray": "cpp",
+        "variant": "cpp"
     },
     "cmake.sourceDirectory": "/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel"
 }

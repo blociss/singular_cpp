@@ -239,10 +239,17 @@ EXAMPLE:  example printLabeledGraph; shows an example
   }
   print(netList(ev));
   kill labels;
-  if (defined(basering) && defined(R1)) {
-    setring R1;
-  }
-  return();
+
+if (typeof(basering) == "ring")
+{
+  setring basering;
+}
+else
+{
+  print("[WARNING] Could not switch back to basering.");
+}
+return();
+
 }
 
 
@@ -639,7 +646,8 @@ example
   }
   example
   { "EXAMPLE:"; echo=2;
-    graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(2,4),list(3,4),list(1),list(2),list(3),list(4)));
+    //graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(2,4),list(3,4),list(1),list(2),list(3),list(4)));
+    graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
     labeledgraph lG = labelGraph(G,0);
     labeledgraph lGelim = eliminateVariables(lG);
     def R = lGelim.over;
@@ -662,16 +670,16 @@ EXAMPLE:  example ISP; shows an example
   def S= G.over;
   def RP = G.overpoly;
   setring S;
-  print("[DEBUG] G.label\n");
-  print(G.labels);
+  //print("[DEBUG] G.label\n");
+  //print(G.labels);
   ideal J = propagators(G);
-  print("[DEBUG] ideal J=progators\n");
-  print(J);
+  //print("[DEBUG] ideal J=progators\n");
+  //print(J);
   list el = G.elimvars;
-  print("[DEBUG] list el=G.elimvars\n");
-  print(el);
+  //print("[DEBUG] list el=G.elimvars\n");
+  //print(el);
   ideal infedges;
-  print("[DEBUG] G.edges="+string(G.edges));
+  //print("[DEBUG] G.edges="+string(G.edges));
 
   for (i = 1; i<=size(G.edges);i++){
 
@@ -679,18 +687,18 @@ EXAMPLE:  example ISP; shows an example
         
         infedges[i]=G.labels[i];}
   }
-  print("[DEBUG] infedges\n");
-  print(infedges);
+  //print("[DEBUG] infedges\n");
+  //print(infedges);
 
   setring RP;
   ideal J = imap(S,J);
   
   ideal infedges = imap(S,infedges);
   J=J+infedges^2;
-  print("[DEBUG] J=J+infedges^2\n");
-  print(J);
-  print("[DEBUG] el\n");
-  print(el);
+  //print("[DEBUG] J=J+infedges^2\n");
+  //print(J);
+  //print("[DEBUG] el\n");
+  //print(el);
   if (not defined(el)){
     print("[DEBUG] el before mapping\n");
     print(el);
@@ -702,19 +710,19 @@ EXAMPLE:  example ISP; shows an example
       J=J+ideal(el[i]);
   }
   J=std(J);
-  print("[DEBUG] J=std(J)\n");
-  print(J);
+  //print("[DEBUG] J=std(J)\n");
+  //print(J);
   list L = kbase(J,2);
-  print("[DEBUG] priting L=kbase(J,2)\n");
-  print(L);
+  //print("[DEBUG] priting L=kbase(J,2)\n");
+  //print(L);
   ideal I = L[1..size(L)];
-  print("[DEBUG] I = L[1..size(L)]\n");
-  print(I);
+  //print("[DEBUG] I = L[1..size(L)]\n");
+  //print(I);
   kill J,infedges,el,L;
   setring S;
-  print("[DEBUG] K=imap(RP,I)\n");
+  //print("[DEBUG] K=imap(RP,I)\n");
   ideal K=imap(RP,I);
-  print(K);
+  //print(K);
   return(K);
 }
 example
@@ -794,99 +802,179 @@ example
   R;
   G2;
 }
-
+proc debugStr(string label, int val) {
+  print(label + string(val));
+}
 
 proc computeBaikovMatrix(def G0)
-"USAGE:  computeBaikovMatrix(G); G labeledgraph, or G graph@*
-ASSUME:  G is a Graph, or@*
-         G is a labeled graph where redundant variables have been eliminated by 
-         the procedure eliminateVariables, and deleted from the ring by the 
-         procedure removeElimVars.
-RETURN:  a labeled graph G1, computes the Baikov matrix of G defined in G1.baikovover and stores it in G1.baikovmatrix
+"
+USAGE:  computeBaikovMatrix(G); G labeledgraph, or G graph
+ASSUME: G is a Graph, or
+        G is a labeled graph where redundant variables have been eliminated by 
+        the procedure eliminateVariables, and deleted from the ring by the 
+        procedure removeElimVars.
+RETURN: a labeled graph G1, computes the Baikov matrix of G defined in G1.baikovover and stores it in G1.baikovmatrix
 KEYWORDS: Feynman graph
-EXAMPLE:  removeElimVars G; shows an example
 "
 {
-  
-if (typeof(G0)=="graph"){
-  labeledgraph lG = labelGraph(G0,0);
-  labeledgraph G1 = eliminateVariables(lG);
-  labeledgraph G2 = removeElimVars(G1);
-  //return(computeBaikovMatrix(G2));
-  kill G0;
-  labeledgraph G0 = G2;
-}
-if (typeof(G0) != "labeledgraph"){
-  ERROR("expected a graph or labeledgraph");
-}
-print("[DEBUG] Starting computeBaikovMatrix\n");
-print(G0);
-labeledgraph G = G0;
-def R = G.over;
-def RP = G.overpoly;
-setring R;
-ideal P = propagators(G);
-ideal I = ISP(G);
-ideal PI=P,I;
-setring RP;
-ideal PI = imap(R,PI);
-int i,j;
-ideal gram;
-int idx=1;
-int startvars= npars(R)+1;
-for (i = 1;i<=nvars(RP);i++){
-   for (j = 1;j<=nvars(RP);j++){
-     if ((i>=startvars) or (j>=startvars)){
-        gram[idx] = var(i)*var(j);
-     } else {
+  if (typeof(G0) == "graph") {
+    print("[DEBUG] Converting graph to labeledgraph...");
+    labeledgraph lG = labelGraph(G0, 0);
+    labeledgraph G1 = eliminateVariables(lG);
+    labeledgraph G2 = removeElimVars(G1);
+    kill G0;
+    labeledgraph G0 = G2;
+  }
+
+  if (typeof(G0) != "labeledgraph") {
+    ERROR("expected a graph or labeledgraph");
+  }
+
+  print("[DEBUG] Starting computeBaikovMatrix");
+  print(G0);
+
+  labeledgraph G = G0;
+
+  def R = G.over;
+  def RP = G.overpoly;
+
+  print("[DEBUG] Using ring R = G.over:");
+  setring R;
+
+  ideal P = propagators(G);
+  print("[DEBUG] Propagators:");
+  print(P);
+
+  ideal I = ISP(G);
+  print("[DEBUG] ISP:");
+  print(I);
+
+  ideal PI = P, I;
+  print("[DEBUG] Combined PI = P + I:");
+  print(PI);
+
+  print("[DEBUG] Switching to overpoly ring RP:");
+  setring RP;
+
+  ideal PI = imap(R, PI);
+  print("[DEBUG] Mapped PI in RP:");
+  print(PI);
+
+print("The graph G0 = ****");
+printLabeledGraph(G0);
+
+print("ring RP = G.overpoly; = " + string(RP));
+print("ring R = G.over; = " + string(R));
+  int i, j;
+  ideal gram;
+  int idx = 1;
+  int startvars = npars(R) + 1;
+  print("[DEBUG] startvars = npars(R) + 1 =" + string(startvars));
+  print("[DEBUG] nvars(RP) = " + string(nvars(RP)));
+
+  for (i = 1; i <= nvars(RP); i++) {
+    for (j = 1; j <= nvars(RP); j++) {
+      print("[DEBUG] i = " + string(i) + ", j = " + string(j));
+      if ((i >= startvars) || (j >= startvars)) {
+        gram[idx] = var(i) * var(j);
+        print("[DEBUG] gram[" + string(idx) + "] = " + string(gram[idx]));
+      } else {
         gram[idx] = 0;
-     }
-     idx++;
-   }
-}
-for (i = 1;i<startvars;i++){
-   for (j = i+1;j<startvars;j++){
-      PI=PI,var(i)*var(j);
-  }
-}
-matrix A = lift(PI,gram);
-int m = npars(R);
-int m2 = (m*(m-1)) div 2;
-int mt= m2-1;
-int n = ncols(PI)-m2;
-ring Z = (0,(t(1..mt),D)),(z(1..n)),dp; //change this
-//ring Z = (0,t(1..mt)),(z(1..n)),dp;
-matrix B[nvars(RP)][nvars(RP)];
-int idx=1;
-poly sumt;
-list pq;
-for (i=1; i<=m;i++){
-  for (j=i+1; j<=m;j++){
-    if (idx<=mt){
-      B[i,j]=1/2*t(idx);
-      sumt=sumt+1/2*t(idx);
-      pq[idx] = 1/2*t(idx);
-    } else {
-      B[i,j]=-sumt;
-      pq[idx]=-sumt;
+      }
+      print("[DEBUG] gram[" + string(idx) + "] = " + string(gram[idx]));
+
+      idx++;
     }
-    B[j,i]=B[i,j];
-    idx++;
   }
+
+  print("[DEBUG] Gram matrix entries:");
+  print(gram);
+
+print("[DEBUG] startvars = " + string(startvars));
+  for (i = 1; i < startvars; i++) {
+    for (j = i + 1; j < startvars; j++) {
+      PI = PI, var(i) * var(j);
+    }
+  }
+
+  print("[DEBUG] PI after adding scalar products:");
+  print(PI);
+
+  matrix A = lift(PI, gram);
+  print("[DEBUG] Lift matrix A = lift(PI, gram):");
+  print(A);
+
+  int m = npars(R);
+  int m2 = (m * (m - 1)) div 2;
+  int mt = m2 - 1;
+  int n = ncols(PI) - m2;
+
+debugStr("[DEBUG] m = ", m);  
+debugStr("[DEBUG] m2 = ", m2);
+debugStr("[DEBUG] mt = ", mt);
+debugStr("[DEBUG] n = ", n);
+
+  ring Z = (0, (t(1..mt), D)), (z(1..n)), dp;
+  print("[DEBUG] New Baikov ring Z:");
+  basering;
+
+  matrix B[nvars(RP)][nvars(RP)];
+  idx = 1;
+  poly sumt;
+  list pq;
+
+  print("[DEBUG] Constructing symmetric B matrix:");
+
+  for (i = 1; i <= m; i++) {
+    for (j = i + 1; j <= m; j++) {
+      if (idx <= mt) {
+        poly tt = 1/2 * t(idx);
+        sumt = sumt + tt;
+        pq[idx] = tt;
+      } else {
+        B[i, j] = -sumt;
+        pq[idx] = -sumt;
+      }
+      B[j, i] = B[i, j];
+      idx++;
+    }
+  }
+
+  print("[DEBUG] Matrix B:");
+  print(B);
+
+  matrix zvars[1][n + m2] = z(1..n), pq[1..m2];
+  print("[DEBUG] zvars matrix (z variables + pq):");
+  print(zvars);
+
+  matrix A = imap(RP, A);
+  print("[DEBUG] A mapped to Baikov ring:");
+  print(A);
+
+  matrix Bentries = zvars * A;
+  print("[DEBUG] Bentries = zvars * A:");
+  print(Bentries);
+
+  matrix B1[nvars(RP)][nvars(RP)] = Bentries[1, 1..ncols(Bentries)];
+  print("[DEBUG] B1 matrix:");
+  print(B1);
+
+  B = B + B1;
+  print("[DEBUG] Final Baikov matrix B = B + B1:");
+  print(B);
+
+  labeledgraph GG = G;
+  GG.baikovover = Z;
+  GG.baikovmatrix = B;
+
+  print("[DEBUG] Finished computeBaikovMatrix. Returning labeledgraph with Baikov matrix.");
+  return(GG);
 }
 
-matrix zvars[1][n+m2] = z(1..n),pq[1..m2];
-matrix A = imap(RP,A);
-matrix Bentries = zvars * A;
-matrix B1[nvars(RP)][nvars(RP)] = Bentries[1,1..ncols(Bentries)];
-B=B+B1;
-labeledgraph GG =G;
-GG.baikovover=Z;
-GG.baikovmatrix = B;
-return(GG);}
 example
 { "EXAMPLE:"; echo=2;labeledgraph G1 = computeBaikovMatrix(G);
-  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
+    graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  
   labeledgraph G1=computeBaikovMatrix(G);
   ring RB= G1.baikovover;
   setring RB;
@@ -934,7 +1022,8 @@ int tem=0;
 int E = m;
 int L = nvars(R);
 print("[DEBUG] n: " + string(n) + ", m: " + string(m) + ", L: " + string(L) + ", E: " + string(E));
-list x;
+list x;  ring RB= G1.baikovover;
+
 for(int i=1;i<=E;i++){
   for(int j=E+1;j<=E+L;j++){ 
     tem=tem+1;

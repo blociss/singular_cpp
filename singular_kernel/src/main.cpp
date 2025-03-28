@@ -26,15 +26,21 @@ int main() {
     printLabeledGraph(lg);
     Graph G = makeGraph(vertices, edges);
     LabeledGraph lG = labelGraph(G, 0);
+     std::cout<<"******computing eliminations******\n";
     LabeledGraph lG1 = eliminateVariables(lG);
+    printLabeledGraph(lG1);
     ideal J = feynmanDenominators(lG1);
     printIdeal(J);
+    std::cout<<"******computing propagators******\n";
     ideal I = propagators(lG1);
-    std::cout << "[DEBUG] Computing ISP...\n";
+    printIdeal(I);
+    std::cout << "*****[DEBUG] Computing ISP...\n";
     ideal ispIdeal = ISP(lG1);
-    std::cout << "[DEBUG] Printing ISP...\n";
     printIdeal(ispIdeal);
-    
+    std::cout<<"******computing Baikov matrix******\n";
+    LabeledGraph B = computeBaikovMatrix(lG1);
+    std::cout<<"[DEBUG] Printing Baikov matrix\n";
+    printLabeledGraph(B);
     // Cleanup (remember to clean up rings, ideals, and lists properly)
     rKill(lG.over);
     return 0;
