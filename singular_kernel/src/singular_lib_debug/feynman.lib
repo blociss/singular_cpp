@@ -200,8 +200,7 @@ EXAMPLE:  example printGraph; shows an example
 example
 { "EXAMPLE:"; echo=2;
   graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(2,4),list(3,4),list(1),list(2),list(3),list(4)));
-  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
-  printGraph(G1);
+  G;
 }
 
 
@@ -222,10 +221,8 @@ EXAMPLE:  example printLabeledGraph; shows an example
   } else {
       print("Graph with "+string(size(G.vertices))+" vertices and "+string(size(G.edges))+" edges");
   }
-  def R1;
-  if (defined(basering)) {
-    R1 = basering;
-  }
+  int ringdef = (typeof(basering)=="ring");
+  if (ringdef){def R1 = basering;}
   def R2 = G.over;
   setring R2;
   list labels =G.labels;
@@ -239,27 +236,14 @@ EXAMPLE:  example printLabeledGraph; shows an example
   }
   print(netList(ev));
   kill labels;
-
-if (typeof(basering) == "ring")
-{
-  setring basering;
-}
-else
-{
-  print("[WARNING] Could not switch back to basering.");
-}
-return();
+  if (ringdef){setring R1;}
 
 }
-
-
 example
 { "EXAMPLE:"; echo=2;
   ring R=(0),q(1..6),dp;
   labeledgraph G = makeLabeledGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(1,2),list(2,4),list(3,4),list(3,4)),R, list (q(1),q(2),q(3),q(4),q(5),q(6)),R);
-  ring R1 =(0),q(1..11),dp;
-  labeledgraph G2 = makeLabeledGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)),R1, list (q(1),q(2),q(3),q(4),q(5),q(6),q(7),q(8),q(9),q(10),q(11)),R1);
-  printLabeledGraph(G2);
+  G;
 }
 
 proc printIBP(oneIBP I)
@@ -277,8 +261,7 @@ ne = net(string(I.c[1]))+net("I")+net("(")+net(string(I.i[1]))+net(")");
      
   }
   ne=ne+net("=0");
-  printNet(ne);
-  return();
+printNet(ne);
 }
 
 proc printsetIBP(setIBP I)
@@ -290,9 +273,8 @@ EXAMPLE:  example printLabeledGraph; shows an example
 "
 {
   setring I.over;
-  print("Collection of IBP identities of the given graph with respect to the seed "+string(I.seed)+".");
-  print("Total number of identities= "+string(size(I.IBP)));
-  return();
+print("Collection of IBP identities of the given graph with respect to the seed "+string(I.seed)+".");
+print("Total number of identities= "+string(size(I.IBP)));
 }
 
 
@@ -311,13 +293,10 @@ EXAMPLE:  example makeGraph; shows an example
   G.edges = e;
   return(G);
 }
-
 example
 { "EXAMPLE:"; echo=2;
   graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(1,2),list(2,4),list(3,4),list(3,4)));
-  printGraph(G);
-  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
-  printGraph(G1);
+  G;
 }
 
 proc makeLabeledGraph(list v, list e, def R, list lab, def Rpoly)
@@ -340,10 +319,7 @@ example
 { "EXAMPLE:"; echo=2;
   ring R=(0),q(1..6),dp;
   labeledgraph G = makeLabeledGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(1,2),list(2,4),list(3,4),list(3,4)),R, list (q(1),q(2),q(3),q(4),q(5),q(6)),R);
-  printLabeledGraph(G);
-  ring R1=(0),p(1..11),dp;
-  labeledgraph G1 = makeLabeledGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)),R1, list (p(1),p(2),p(3),p(4),p(5),p(6),p(7),p(8),p(9),p(10),p(11)),R1);
-  printLabeledGraph(G1);
+  G;
 }
 
 
@@ -356,21 +332,13 @@ KEYWORDS: Feynman graph
 EXAMPLE:  example labelGraph; shows an example
 "
 {
-  int ringdef = 0;
-  def R1;
-  if (defined(basering)) {
-    R1 = basering;
-    ringdef = 1;
-  }
+  int ringdef = (typeof(basering)=="ring");
+  if (ringdef){def R1 = basering;}
   int ct;
   for (int i = 1 ; i<=size(G.edges); i++){if (size((G.edges)[i])==1){ct=ct+1;}}
-  print("[DEBUG] ct = "+string(ct));
   int anzq = size(G.edges)-ct;
-  print("[DEBUG] anzq = "+string(anzq));
   ring P = (ch),(p(1..ct),q(1..anzq)),ip;
-  print("[DEBUG] P = "+string(P));
   ring R = (ch,p(1..ct)),(q(1..anzq)),ip;
-  print("[DEBUG] R = "+string(R));
   list lab;
   int pidx = 1;
   int qidx = 1;
@@ -383,16 +351,15 @@ EXAMPLE:  example labelGraph; shows an example
           qidx = qidx+1;
       }
   }
-  print("[DEBUG] lab = "+string(lab));
-    labeledgraph lG = makeLabeledGraph(G.vertices,G.edges,R, lab,P);
+  labeledgraph lG = makeLabeledGraph(G.vertices,G.edges,R, lab,P);
   if (ringdef){setring R1;}
   return(lG);
 }
 example
 { "EXAMPLE:"; echo=2;
-  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
-  labeledgraph lG1 = labelGraph(G1,0);
-  lG1;
+  graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(2,4),list(3,4),list(1),list(2),list(3),list(4)));
+  labeledgraph lG = labelGraph(G,0);
+  lG;
 }
 
 proc balancingIdeal(labeledgraph G)
@@ -403,6 +370,7 @@ KEYWORDS: Feynman graph
 EXAMPLE:  example balancingIdeal; shows an example
 "
 {
+ 
   list v = G.vertices;
   list e = G.edges;
   list lab = G.labels;
@@ -432,30 +400,14 @@ EXAMPLE:  example balancingIdeal; shows an example
 }
 example
 { "EXAMPLE:"; echo=2;
-  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
-  labeledgraph lG1 = labelGraph(G1,0);
-  def R1 = lG1.over;
-  setring R1;
-  ideal I1 = balancingIdeal(lG1);
-  I1;
+  graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(2,4),list(3,4),list(1),list(2),list(3),list(4)));
+  labeledgraph lG = labelGraph(G,0);
+  def R= lG.over;
+  setring R;
+  ideal I = balancingIdeal(lG);
 }
 
 
-proc substituteGraph(labeledgraph G, poly a, poly b)
-"USAGE:  substituteGraph(G); G labeledgraph@*
-ASSUME:  G is a labeled graph
-RETURN:  substitute the variable a in the labeling by b
-KEYWORDS: Feynman graph
-EXAMPLE:  example substituteGraph; shows an example
-"
-{
-  list L=G.labels;
-  for (int i = 1; i<=size(L);i++){
-    L[i]=subst(L[i],a,b);
-  }
-  labeledgraph G1 = makeLabeledGraph(G.vertices,G.edges,G.over,L,G.overpoly);
-return(G1);
-}
 proc eliminateVariables(labeledgraph G)
 "USAGE:  eliminateVariables(G); G labeledgraph@*
 ASSUME:  G is a labeled graph
@@ -464,11 +416,8 @@ KEYWORDS: Feynman graph
 EXAMPLE:  example eliminateVariables; shows an example
 "
 {
-  def R1;
-  if (defined(basering)) {
-    R1 = basering;
-  }
-
+  int ringdef = (typeof(basering)=="ring");
+  if (ringdef){def R1 = basering;}
   def RP=G.overpoly;
   def R=G.over;
   setring R;
@@ -482,33 +431,30 @@ EXAMPLE:  example eliminateVariables; shows an example
   labeledgraph G1=G;
   list eliminatedVariables;
   for (int i = 1; i<=size(I);i++){
-    ld=lead(I[i]);
-    ta=ld-I[i]; 
-    setring R;
-    poly ld = imap(RP,ld);
-    eliminatedVariables[i]=ld;
-    poly ta = imap(RP,ta);
-    G1=substituteGraph(G1,ld,ta);
-    kill ld,ta;
-    setring RP; 
+     ld=lead(I[i]);
+     ta=ld-I[i];
+     setring R;
+     poly ld = imap(RP,ld);
+     eliminatedVariables[i]=ld;
+     poly ta = imap(RP,ta);
+     G1=substituteGraph(G1,ld,ta);
+     kill ld,ta;
+     setring RP; 
   ;}
+  kill ld,ta;
   setring R;
   kill I;
   G1.elimvars=eliminatedVariables;
   kill eliminatedVariables;
   setring RP;
   kill I;
-  //if (ringdef){setring R1;}
+  if (ringdef){setring R1;}
 return(G1);}
-
 example
 { "EXAMPLE:"; echo=2;
- 
-  graph G1 = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
-  labeledgraph lG1 = labelGraph(G1,0);
-  def R1 = lG1.over;
-  setring R1;
-  eliminateVariables(lG1);
+  graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(2,4),list(3,4),list(1),list(2),list(3),list(4)));
+  labeledgraph lG = labelGraph(G,0);
+  eliminateVariables(lG);
 }
 
 proc deleteFromIntvec(intvec v, int j){
@@ -584,6 +530,21 @@ S;
 
 
 
+proc substituteGraph(labeledgraph G, poly a, poly b)
+"USAGE:  substituteGraph(G); G labeledgraph@*
+ASSUME:  G is a labeled graph
+RETURN:  substitute the variable a in the labeling by b
+KEYWORDS: Feynman graph
+EXAMPLE:  example eliminateVariables; shows an example
+"
+{
+  list L=G.labels;
+  for (int i = 1; i<=size(L);i++){
+    L[i]=subst(L[i],a,b);
+  }
+  labeledgraph G1 = makeLabeledGraph(G.vertices,G.edges,G.over,L,G.overpoly);
+return(G1);
+}
 
 
 
@@ -616,45 +577,44 @@ example
 }
 
 
-  proc propagators(labeledgraph G)
-  "USAGE:  propagators(G); G labeledgraph@*
-  ASSUME:  G is a labeled graph
-  RETURN:  ideal, containing the denominators in the Feynman integral
-  KEYWORDS: Feynman graph
-  EXAMPLE:  example propagators; shows an example
-  "
-  {
-    list L = G.labels;
-    def S= G.over;
-    def RP= G.overpoly;
-    setring S;
-    ideal J;
-    for (int i = 1; i<=size(L);i++){
-        if (size(G.edges[i])==2){J[i]=L[i]^2;}
-    }
-    ideal infedges;
-    for (i = 1; i<=size(G.edges);i++){
-        if(size(G.edges[i])==1){infedges[i]=G.labels[i]^2;}
-    }
-    setring RP;
-    ideal J = imap(S,J);
-    ideal infedges = imap(S,infedges);
-    J=reduce(J,std(infedges));
-    setring S;
-  ideal J=imap(RP,J);
-    return(J);
+proc propagators(labeledgraph G)
+"USAGE:  propagators(G); G labeledgraph@*
+ASSUME:  G is a labeled graph
+RETURN:  ideal, containing the denominators in the Feynman integral
+KEYWORDS: Feynman graph
+EXAMPLE:  example propagators; shows an example
+"
+{
+  list L = G.labels;
+  def S= G.over;
+  def RP= G.overpoly;
+  setring S;
+  ideal J;
+  for (int i = 1; i<=size(L);i++){
+      if (size(G.edges[i])==2){J[i]=L[i]^2;}
   }
-  example
-  { "EXAMPLE:"; echo=2;
-    //graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(2,4),list(3,4),list(1),list(2),list(3),list(4)));
-    graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
-    labeledgraph lG = labelGraph(G,0);
-    labeledgraph lGelim = eliminateVariables(lG);
-    def R = lGelim.over;
-    setring R;
-    ideal I = propagators(lGelim);
-    I;
+  ideal infedges;
+  for (i = 1; i<=size(G.edges);i++){
+      if(size(G.edges[i])==1){infedges[i]=G.labels[i]^2;}
   }
+  setring RP;
+  ideal J = imap(S,J);
+  ideal infedges = imap(S,infedges);
+  J=reduce(J,std(infedges));
+  setring S;
+ ideal J=imap(RP,J);
+  return(J);
+}
+example
+{ "EXAMPLE:"; echo=2;
+  graph G = makeGraph(list(1,2,3,4),list(list(1,3),list(1,2),list(2,4),list(3,4),list(1),list(2),list(3),list(4)));
+  labeledgraph lG = labelGraph(G,0);
+  labeledgraph lGelim = eliminateVariables(lG);
+  def R = lGelim.over;
+  setring R;
+  ideal I = propagators(lGelim);
+  I;
+}
 
 proc ISP(labeledgraph G)
 "USAGE:   ISP(G); G labeledgraph@*
@@ -665,64 +625,30 @@ KEYWORDS: Feynman graph
 EXAMPLE:  example ISP; shows an example
 "
 {
-  print("[DEBUG] Starting ISP\n");
   int i;
   def S= G.over;
   def RP = G.overpoly;
   setring S;
-  //print("[DEBUG] G.label\n");
-  //print(G.labels);
   ideal J = propagators(G);
-  //print("[DEBUG] ideal J=progators\n");
-  //print(J);
   list el = G.elimvars;
-  //print("[DEBUG] list el=G.elimvars\n");
-  //print(el);
   ideal infedges;
-  //print("[DEBUG] G.edges="+string(G.edges));
-
   for (i = 1; i<=size(G.edges);i++){
-
-      if(size(G.edges[i])==1){
-        
-        infedges[i]=G.labels[i];}
+      if(size(G.edges[i])==1){infedges[i]=G.labels[i];}
   }
-  //print("[DEBUG] infedges\n");
-  //print(infedges);
-
   setring RP;
   ideal J = imap(S,J);
-  
   ideal infedges = imap(S,infedges);
   J=J+infedges^2;
-  //print("[DEBUG] J=J+infedges^2\n");
-  //print(J);
-  //print("[DEBUG] el\n");
-  //print(el);
-  if (not defined(el)){
-    print("[DEBUG] el before mapping\n");
-    print(el);
-    list el = imap(S,el);
-    print("[DEBUG] el after mapping\n");
-    print(el);
-    }
+  if (not defined(el)){list el = imap(S,el);}
   for (i = 1; i<=size(el);i++){
       J=J+ideal(el[i]);
   }
   J=std(J);
-  //print("[DEBUG] J=std(J)\n");
-  //print(J);
   list L = kbase(J,2);
-  //print("[DEBUG] priting L=kbase(J,2)\n");
-  //print(L);
   ideal I = L[1..size(L)];
-  //print("[DEBUG] I = L[1..size(L)]\n");
-  //print(I);
   kill J,infedges,el,L;
   setring S;
-  //print("[DEBUG] K=imap(RP,I)\n");
   ideal K=imap(RP,I);
-  //print(K);
   return(K);
 }
 example
@@ -730,8 +656,10 @@ example
   graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
   labeledgraph lG = labelGraph(G,0);
   labeledgraph G1 = eliminateVariables(lG);
+  G1;
   ring R= G1.over;
   setring R;
+  R;
   ISP(G1);
 }
 
@@ -744,47 +672,72 @@ EXAMPLE:  removeElimVars G; shows an example
 "
 {
 labeledgraph G1;
+print("[DEBUG] Starting removeElimVars");
 def R= G.over;
+print("[DEBUG] R =G.over = " + string(R));
 def RP = G.overpoly;
+print("[DEBUG] RP =G.overpoly = " + string(RP));
 G1.vertices=G.vertices;
 G1.edges = G.edges;
 setring R;
 list el = G.elimvars;
+print("[DEBUG] el =G.elimvars = " + string(el));
 list lb = G.labels;
+print("[DEBUG] lb =G.labels = " + string(lb));
 list iv,ip;
 int j,i;
 for (i = 1; i<=size(el);i++){
   if (rvar(el[i]) != 0){
-     iv[size(iv)+1]=rvar(el[i]);
+    print("[DEBUG] rvar(el[i]) = " + string(rvar(el[i])));
+    iv[size(iv)+1]=rvar(el[i]);
   } else {
-     for (j=1;j<=npars(R);j++){ 
-       if (par(j)==el[i]){ip[size(ip)+1]=j;break;}
-     }
+    print("[DEBUG] el[i] = " + string(el[i]));
+    for (j=1;j<=npars(R);j++){
+      if (par(j)==el[i]){ip[size(ip)+1]=j;break;}
+    }
   }
 }
+
 iv = sort(iv)[1];
 ip = sort(ip)[1];
+print("[DEBUG] iv = " + string(iv));
+print("[DEBUG] ip = " + string(ip));
+
 def R1 = R;
 for (i = size(iv); i>=1;i--){
   R1 = removeVariable(R1,iv[i]);
+  print("[DEBUG] R1 after removing variable " + string(iv[i]) + " = " + string(R1));
 }
 for (i = size(ip); i>=1;i--){
+  print("[DEBUG] R1=G.over before removing parameter " + string(ip[i]) + " = " + string(R1));
   R1 = removeParameter(R1,ip[i]);
+  print("[DEBUG] R1 after removing parameter " + string(ip[i]) + " = " + string(R1));
 }
 kill iv;
+print("[DEBUG] el before setting ring RP = " + string(el));
 setring RP;
+print("[DEBUG] RP =G.overpoly = " + string(RP));
+print("[DEBUG] el before imap = " + string(el));
 list el = imap(R,el);
+print("[DEBUG] el after imap = " + string(el));
 list iv;
 for (i = 1; i<=size(el);i++){
+  print("[DEBUG] el[i] = " + string(el[i]));
   iv[size(iv)+1]=rvar(el[i]);
 }
 iv = sort(iv)[1];
 def RP1 = RP;
 for (int i = size(iv); i>=1;i--){
+  print("[DEBUG] RP1 before removing variable " + string(iv[i]) + " = " + string(RP1));
   RP1 = removeVariable(RP1,iv[i]);
+  print("[DEBUG] RP1 after removing variable " + string(iv[i]) + " = " + string(RP1));
 }
+print("[DEBUG] lb before mapping = " + string(lb));
+
 setring R1;
 list tr =imap(R,lb);
+print("[DEBUG] lb after mapping = " + string(lb));
+print("[DEBUG] tr = " + string(tr));
 G1.labels = tr;
 G1.over = R1;
 G1.overpoly = RP1;
@@ -792,189 +745,120 @@ G1.elimvars =list();
 return(G1);}
 example
 { "EXAMPLE:"; echo=2;
-  graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  //graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
+
   labeledgraph lG = labelGraph(G,0);
   labeledgraph G1 = eliminateVariables(lG);
   labeledgraph G2 = removeElimVars(G1);
-  G2;
   ring R= G2.over;
   setring R;
   R;
   G2;
 }
-proc debugStr(string label, int val) {
-  print(label + string(val));
-}
+
 
 proc computeBaikovMatrix(def G0)
-"
-USAGE:  computeBaikovMatrix(G); G labeledgraph, or G graph
-ASSUME: G is a Graph, or
-        G is a labeled graph where redundant variables have been eliminated by 
-        the procedure eliminateVariables, and deleted from the ring by the 
-        procedure removeElimVars.
-RETURN: a labeled graph G1, computes the Baikov matrix of G defined in G1.baikovover and stores it in G1.baikovmatrix
+"USAGE:  computeBaikovMatrix(G); G labeledgraph, or G graph@*
+ASSUME:  G is a Graph, or@*
+         G is a labeled graph where redundant variables have been eliminated by 
+         the procedure eliminateVariables, and deleted from the ring by the 
+         procedure removeElimVars.
+RETURN:  a labeled graph G1, computes the Baikov matrix of G defined in G1.baikovover and stores it in G1.baikovmatrix
 KEYWORDS: Feynman graph
+EXAMPLE:  removeElimVars G; shows an example
 "
 {
-  if (typeof(G0) == "graph") {
-    print("[DEBUG] Converting graph to labeledgraph...");
-    labeledgraph lG = labelGraph(G0, 0);
-    labeledgraph G1 = eliminateVariables(lG);
-    labeledgraph G2 = removeElimVars(G1);
-    kill G0;
-    labeledgraph G0 = G2;
-  }
-
-  if (typeof(G0) != "labeledgraph") {
-    ERROR("expected a graph or labeledgraph");
-  }
-
-  print("[DEBUG] Starting computeBaikovMatrix");
-  print(G0);
-
-  labeledgraph G = G0;
-
-  def R = G.over;
-  def RP = G.overpoly;
-
-  print("[DEBUG] Using ring R = G.over:");
-  setring R;
-
-  ideal P = propagators(G);
-  print("[DEBUG] Propagators:");
-  print(P);
-
-  ideal I = ISP(G);
-  print("[DEBUG] ISP:");
-  print(I);
-
-  ideal PI = P, I;
-  print("[DEBUG] Combined PI = P + I:");
-  print(PI);
-
-  print("[DEBUG] Switching to overpoly ring RP:");
-  setring RP;
-
-  ideal PI = imap(R, PI);
-  print("[DEBUG] Mapped PI in RP:");
-  print(PI);
-
-print("The graph G0 = ****");
-printLabeledGraph(G0);
-
-print("ring RP = G.overpoly; = " + string(RP));
-print("ring R = G.over; = " + string(R));
-  int i, j;
-  ideal gram;
-  int idx = 1;
-  int startvars = npars(R) + 1;
-  print("[DEBUG] startvars = npars(R) + 1 =" + string(startvars));
-  print("[DEBUG] nvars(RP) = " + string(nvars(RP)));
-
-  for (i = 1; i <= nvars(RP); i++) {
-    for (j = 1; j <= nvars(RP); j++) {
-      print("[DEBUG] i = " + string(i) + ", j = " + string(j));
-      if ((i >= startvars) || (j >= startvars)) {
-        gram[idx] = var(i) * var(j);
-        print("[DEBUG] gram[" + string(idx) + "] = " + string(gram[idx]));
-      } else {
-        gram[idx] = 0;
-      }
-      print("[DEBUG] gram[" + string(idx) + "] = " + string(gram[idx]));
-
-      idx++;
-    }
-  }
-
-  print("[DEBUG] Gram matrix entries:");
-  print(gram);
-
-print("[DEBUG] startvars = " + string(startvars));
-  for (i = 1; i < startvars; i++) {
-    for (j = i + 1; j < startvars; j++) {
-      PI = PI, var(i) * var(j);
-    }
-  }
-
-  print("[DEBUG] PI after adding scalar products:");
-  print(PI);
-
-  matrix A = lift(PI, gram);
-  print("[DEBUG] Lift matrix A = lift(PI, gram):");
-  print(A);
-
-  int m = npars(R);
-  int m2 = (m * (m - 1)) div 2;
-  int mt = m2 - 1;
-  int n = ncols(PI) - m2;
-
-debugStr("[DEBUG] m = ", m);  
-debugStr("[DEBUG] m2 = ", m2);
-debugStr("[DEBUG] mt = ", mt);
-debugStr("[DEBUG] n = ", n);
-
-  ring Z = (0, (t(1..mt), D)), (z(1..n)), dp;
-  print("[DEBUG] New Baikov ring Z:");
-  basering;
-
-  matrix B[nvars(RP)][nvars(RP)];
-  idx = 1;
-  poly sumt;
-  list pq;
-
-  print("[DEBUG] Constructing symmetric B matrix:");
-
-  for (i = 1; i <= m; i++) {
-    for (j = i + 1; j <= m; j++) {
-      if (idx <= mt) {
-        poly tt = 1/2 * t(idx);
-        sumt = sumt + tt;
-        pq[idx] = tt;
-      } else {
-        B[i, j] = -sumt;
-        pq[idx] = -sumt;
-      }
-      B[j, i] = B[i, j];
-      idx++;
-    }
-  }
-
-  print("[DEBUG] Matrix B:");
-  print(B);
-
-  matrix zvars[1][n + m2] = z(1..n), pq[1..m2];
-  print("[DEBUG] zvars matrix (z variables + pq):");
-  print(zvars);
-
-  matrix A = imap(RP, A);
-  print("[DEBUG] A mapped to Baikov ring:");
-  print(A);
-
-  matrix Bentries = zvars * A;
-  print("[DEBUG] Bentries = zvars * A:");
-  print(Bentries);
-
-  matrix B1[nvars(RP)][nvars(RP)] = Bentries[1, 1..ncols(Bentries)];
-  print("[DEBUG] B1 matrix:");
-  print(B1);
-
-  B = B + B1;
-  print("[DEBUG] Final Baikov matrix B = B + B1:");
-  print(B);
-
-  labeledgraph GG = G;
-  GG.baikovover = Z;
-  GG.baikovmatrix = B;
-
-  print("[DEBUG] Finished computeBaikovMatrix. Returning labeledgraph with Baikov matrix.");
-  return(GG);
+  
+if (typeof(G0)=="graph"){
+  labeledgraph lG = labelGraph(G0,0);
+  labeledgraph G1 = eliminateVariables(lG);
+  print("[DEBUG] ring RP = G1.overpoly = " + string(G1.overpoly));
+  print("[DEBUG] ring R = G1.over = " + string(G1.over));
+  labeledgraph G2 = removeElimVars(G1);
+  print("[DEBUG] ring RP = G2.overpoly = " + string(G2.overpoly));
+  print("[DEBUG] ring R = G2.over = " + string(G2.over));
+  //return(computeBaikovMatrix(G2));
+  kill G0;
+  labeledgraph G0 = G2;
+}
+if (typeof(G0) != "labeledgraph"){
+  ERROR("expected a graph or labeledgraph");
 }
 
+ring Rp = G0.overpoly;
+ring R = G0.over;
+print("The ring R =G0.over = " + string(R));
+print("The ring RP =G0.overpoly =  " + string(Rp));
+
+labeledgraph G = G0;
+def R = G.over;
+def RP = G.overpoly;
+print("The ring R =G.over = " + string(R));
+print("The ring RP =G.overpoly =  " + string(RP));
+setring R;
+ideal P = propagators(G);
+ideal I = ISP(G);
+ideal PI=P,I;
+setring RP;
+ideal PI = imap(R,PI);
+int i,j;
+ideal gram;
+int idx=1;
+int startvars= npars(R)+1;
+for (i = 1;i<=nvars(RP);i++){
+   for (j = 1;j<=nvars(RP);j++){
+     if ((i>=startvars) or (j>=startvars)){
+        gram[idx] = var(i)*var(j);
+     } else {
+        gram[idx] = 0;
+     }
+     idx++;
+   }
+}
+print("The ideal gram = " + string(gram));
+for (i = 1;i<startvars;i++){
+   for (j = i+1;j<startvars;j++){
+      PI=PI,var(i)*var(j);
+  }
+}
+matrix A = lift(PI,gram);
+int m = npars(R);
+int m2 = (m*(m-1)) div 2;
+int mt= m2-1;
+int n = ncols(PI)-m2;
+ring Z = (0,(t(1..mt),D)),(z(1..n)),dp; //change this
+//ring Z = (0,t(1..mt)),(z(1..n)),dp;
+matrix B[nvars(RP)][nvars(RP)];
+int idx=1;
+poly sumt;
+list pq;
+for (i=1; i<=m;i++){
+  for (j=i+1; j<=m;j++){
+    if (idx<=mt){
+      B[i,j]=1/2*t(idx);
+      sumt=sumt+1/2*t(idx);
+      pq[idx] = 1/2*t(idx);
+    } else {
+      B[i,j]=-sumt;
+      pq[idx]=-sumt;
+    }
+    B[j,i]=B[i,j];
+    idx++;
+  }
+}
+matrix zvars[1][n+m2] = z(1..n),pq[1..m2];
+matrix A = imap(RP,A);
+matrix Bentries = zvars * A;
+matrix B1[nvars(RP)][nvars(RP)] = Bentries[1,1..ncols(Bentries)];
+B=B+B1;
+labeledgraph GG =G;
+GG.baikovover=Z;
+GG.baikovmatrix = B;
+return(GG);}
 example
 { "EXAMPLE:"; echo=2;labeledgraph G1 = computeBaikovMatrix(G);
-    graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
-  
+  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
   labeledgraph G1=computeBaikovMatrix(G);
   ring RB= G1.baikovover;
   setring RB;
@@ -1021,9 +905,7 @@ matrix C[n][n];
 int tem=0;
 int E = m;
 int L = nvars(R);
-print("[DEBUG] n: " + string(n) + ", m: " + string(m) + ", L: " + string(L) + ", E: " + string(E));
-list x;  ring RB= G1.baikovover;
-
+list x;
 for(int i=1;i<=E;i++){
   for(int j=E+1;j<=E+L;j++){ 
     tem=tem+1;
@@ -1683,6 +1565,7 @@ example{
   printMat(G1.baikovmatrix);
   
   list setInt=list(list(1,1,1,-1,-3,1,-1,-1,-1),list(1,-1,1,-1,-3,-1,-1,-4,-1));
+  list setInt=list(list(1,1,1,1,1,1,1,-5,0));
   list web=generateWebSectors(setInt[1]);
   list w1=setSectorMap(web); 
   web=w1;
@@ -2075,7 +1958,6 @@ EXAMPLE:  getRedIBPs; shows an example
   print("Elapsed time to compute rref in seconds:" +string( elapsed_time)+ ". size of the matrix:"+string(nrows(N))+" * "+string(ncols(N)));
    setring R;
   list Z=imap(RZ,Z);
-
   for(int j=1;j <= Z[4];j++)
   { for(int k=1;k <= ncols(Z[1]);k++)
     {
@@ -2090,7 +1972,6 @@ EXAMPLE:  getRedIBPs; shows an example
   //identify non-zero columns
   list seed;
   int l=1;
-
   for(int k=1;k <= ncols(Z[3]);k++){
     for(int j=1;j <= nrows(Z[3]);j++){
       if(Z[3][j,k] != 0){
@@ -2099,17 +1980,16 @@ EXAMPLE:  getRedIBPs; shows an example
         break;
       }
     }
+
   }
-print("size(seed)="+string(size(seed)));
+
   return(list(indIBP,seed));
 }
 example
 { "EXAMPLE:"; echo=2;list s= getSector(l);
   graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
   labeledgraph G1=computeBaikovMatrix(G);
-  list top = list(1, 1, 1, -1, -3, -1, -1, -1, -1);
-
-  setIBP S=computeIBP(G1,top);
+  setIBP S=computeIBP(G1,list(1,1,0,1,0,1,0,1,0));
   ring R=S.over;
   setring R;
   list L=getRedIBPs(S,101);
@@ -2209,11 +2089,8 @@ print(size(M1));
 print("size of M2 in Many");
 print(size(M2));
 
-module MM=intersect(M1,M2);
-print("size of MM in Many");
-print(size(MM));
   option(redSB);
-  module M = std(MM);
+  module M = std(intersect(M1, M2));
 print("size of M in Many");
 print(size(M));
 int elapsed_time=timer;
@@ -2290,8 +2167,21 @@ for(int b=1;b<=size(setNu);b++)
 return(S);
 }
 example{
-  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
-  labeledgraph G1=computeBaikovMatrix(G);
+  graph G = makeGraph(
+    list(1,2,3,4,5,6), 
+    list(
+        list(6,1), list(4,6), list(1,2), list(3,5), 
+        list(4,3), list(2,5), list(5,6), list(1), 
+        list(2), list(3), list(4)
+    )
+  );
+  
+  // Define a list of target integrals
+  list targetInt = list(
+    list(1, 1, 1, -1, -3, 1, -1, -1, -1), 
+    list(1, -1, 1, -1, -3, -1, -1, -4, -1)
+  );
+    labeledgraph G1=computeBaikovMatrix(G);
 
   //here we compute set of IBPs correspond to two seeds seperately
   setIBP IBP1=computeIBP(G1,list(1,1,0,1,0,1,0,-1,0));
@@ -2301,12 +2191,14 @@ example{
   
   //here we compute set of IBPs correspond both seeds simultaneously 
   //We can use this only when both integrals belongs to the same sector
-  list targetInt = list(list(1, 1, 1, -1, -3, -1, -1, -1, -1), list(1, -1, 1, -1, -3, -1, -1, -4, -1));
-  list top = list(list(1, 1, 1, -1, -3, -1, -1, -1, -1));
-  setIBP SS=computeManyIBP(G,top);
+
   setIBP S=computeManyIBP(G,targetInt);
-  //setIBP S=computeManyIBP(G,list(list(1,1,0,1,0,1,0,-1,0),list(1,2,0,3,0,1,0,-2,0)));
   size(S.IBP);  
+  
+  list targetInt1 = list(1, 1, 1, -1, -3, 1, -1, -1, -1  );
+  setIBP IBP2=computeIBP(G,targetInt1);
+  size(IBP2.IBP);
+
 }
 
 proc getReducedIBPSystem(graph G,list targetInt )
@@ -2361,38 +2253,21 @@ KEYWORDS: Feynman graph,IBPs
   //reducedIBPs.over=G1.baikovover;
   int te=0;
   reducedIBPs.seed=targetInt;
-
+  
 
   int nLayers=size(web);
-
-print("They are j=" + string(nLayers) + " layers");
-
-for (int j = 1; j <= nLayers; j++) {
-    int sectorSize = size(web[j]);
-
-    for (int k = 1; k <= sectorSize; k++) {
-      print("Layer " + string(j) + " has " + string(k) + " sectors");
-    }
-}
-
   for(int j=1; j <= nLayers; j++)
     {
 
 //For each sector in that layer j, generate IBP relations correspond to each integrals belong to that sector.
 
- int nSectors=size(web[j]);
+      int nSectors=size(web[j]);
       for(int k=1; k <= nSectors; k++)
       {
-        print("Starting the computation in the sector:"+string(k)+ " at layer "+string(j)+". ");
-
         
         if(size(web[j][k].targetInts)>=1)
         {
-
-          print("size(web[j][k].targetInts) before computeManyIBP " + string(size(web[j][k].targetInts)));
-
           setIBP totalIBP=computeManyIBP(G1,web[j][k].targetInts);
-          print("size(totalIBP.IBP)="+string(size(totalIBP.IBP)));
          
           if(te==0){
             reducedIBPs.over=totalIBP.over;
@@ -2403,10 +2278,7 @@ for (int j = 1; j <= nLayers; j++) {
 //using finite field row reduction, identify independent IBPs, master integrals and tails integrals.
           list L=getRedIBPs(totalIBP,101);    //L[1]=,set of independent IBPs, L[2]=master and tail integrals
           list indpndIBP=L[1];
-          print("size(indpndIBP)="+string(size(indpndIBP)));
           list masterAndTailIntgrals=L[2];
-          print("size(masterAndTailIntgrals)="+string(size(masterAndTailIntgrals)));
-          
 // update reducedIBPs. 
           setring R;
           if(size(reducedIBPs.IBP)==0)
@@ -2429,10 +2301,9 @@ for (int j = 1; j <= nLayers; j++) {
 //..distingush the master integrals which will be assigned to MI.
           list w=updateWeb(web,list(j,k),masterAndTailIntgrals);
           web=w[1]; //here the web is updated
-
-          print("size(web[j][k].targetInts) after updateweb "+string(size(web[j][k].targetInts)));
+          print("w[2]=");
+          print(w[2]);
           list masterIntgralsInSector=w[2];
-          print("size(masterIntgralsInSector)="+string(size(masterIntgralsInSector)));
           if(size(MI)==0)
           { 
             MI=masterIntgralsInSector;
@@ -2457,155 +2328,8 @@ for (int j = 1; j <= nLayers; j++) {
 return(list(reducedIBPs,MI));
 }
 example{
-
   graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
-  list targetInt = list(list((1,1,1,-1,-3,-1,-1,-1,-1)), list(1,-1,1,-1,-3,-1,-1,-4,-1)); 
- 
-  list finalset=getReducedIBPSystem(G,targetInt);
-  
-  setIBP S=finalset[1];
-  ring R=S.over;
-  setring R;
-  oneIBP I=S.IBP[5];
-  I;
-  size(finalset[2]);
-}
-
-
-
-
-
-
-
-
-
-
-proc getReducedIBPSystems(graph G,list targetInt )
-"USAGE:  getReducedIBPSystem(G,targetInt); targetInt list,G graph@*,
-ASSUME:  G is a graph and targetInt is a list of seeds of target integrals. 
-RETURN:  list (reducedIBPs,MI) where  reducedIBPs::setIBP, MI::list.
-          reducedIBPs contain the reduced IBP system for the target integrals
-          MI contain the master integrals
-
-KEYWORDS: Feynman graph,IBPs
-"
-
-{
-  //Better to check that the provided integrals belong to the same integral family
-  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
-  list targetInt = list(list(1, 1, 1, -1, -3, 1, -1, -1, -1), list(1, -1, 1, -1, -3, -1, -1, -4, -1));
-
-    list L=pickHighestSector(targetInt);
-    if(size(L)>1)                           //if size(L)>1, we have to do the same for each list in L.
-    {
-      ERROR("provided integrals belong to more than one integral class");
-    }
-
-  list web=generateWebSectors(L[1][1]); 
-  web=setSectorMap(web);
-
-  list w4=updateWeb(web,list(1,1),targetInt); 
-  web=w4[1];
-  print("web=w4[1]"); 
-  print(web);
-  print(" ");
- 
-  labeledgraph G1=computeBaikovMatrix(G);
-  setIBP reducedIBPs;
-  list MI;
-  //reducedIBPs.over=G1.baikovover;
-  int te=0;
-  reducedIBPs.seed=targetInt;
-  
-
-  int nLayers=size(web);
-  int nLayers=1;
-int j=1;
-
-//For each sector in that layer j, generate IBP relations correspond to each integrals belong to that sector.
-
-    //  int nSectors=size(web[j]);
-      int nSectors=1;
-int k=1;
-        
-  
-          print("size(web[j][k].targetInts) before computeManyIBP " + string(size(web[j][k].targetInts)));
-                    setIBP totalIBP=computeManyIBP(G1,web[j][k].targetInts);
-         
-          if(te==0){
-       
-            reducedIBPs.over=totalIBP.over;
-
-       
-            te=te+1;
-          }
-         ring R=reducedIBPs.over;
-                
-//using finite field row reduction, identify independent IBPs, master integrals and tails integrals.
-          list L=getRedIBPs(totalIBP,101);    //L[1]=,set of independent IBPs, L[2]=master and tail integrals
-          list indpndIBP=L[1];
-          print(" size of indpndIBP"+" "+string(size(indpndIBP)));
-          list masterAndTailIntgrals=L[2];
-          print("size of masterAndTailIntgrals");
-          print(size(masterAndTailIntgrals));
-// update reducedIBPs. 
-          setring R;
-          print("size(reducedIBPs.IBP)");
-          print(size(reducedIBPs.IBP));
-          
-          if(size(reducedIBPs.IBP)==0)
-          {
-            //list resr = imap(reducedIBPs.over,indpndIBP);
-            //reducedIBPs.IBP=resr;
-            reducedIBPs.IBP=indpndIBP;
-            print("reducedIBPs.IBP_Before");
-            print(size(reducedIBPs.IBP));
-          }
-          else
-          {
-            for(int i=1;i <= size(indpndIBP);i++)
-            {
-             // reducedIBPs.IBP[size(reducedIBPs.IBP)+1]=imap(reducedIBPs.over,indpndIBP[i]);
-               reducedIBPs.IBP[size(reducedIBPs.IBP)+1]=indpndIBP[i];
-            }
-            print("reducedIBPs.IBP_After");
-            print(size(reducedIBPs.IBP));
-          }
-    kill R;
-//Update the sectors below to the current sector using masterAndTailIntgrals. In this step, we can also.. 
-//..distingush the master integrals which will be assigned to MI.
-          list w=updateWeb(web,list(j,k),masterAndTailIntgrals);
-          web=w[1]; //here the web is updated
-
-          print("size(web[j][k].targetInts) after updateweb");
-          print(size(web[j][k].targetInts));
-
-          print(" size of w[2]=");
-          print(size(w[2]));
-          list masterIntgralsInSector=w[2];
-          print("size of masterIntgralsInSector " + string(size(masterIntgralsInSector)));
-          if(size(MI)==0)
-          { 
-            MI=masterIntgralsInSector;
-          }
-          else
-          {
-            for(int i=1;i <= size(masterIntgralsInSector);i++)
-            {
-              if(alreadyIntheList(MI,masterIntgralsInSector[i])==0)
-              {
-                MI[size(MI)+1]=masterIntgralsInSector[i];
-              }
-                //MI[size(MI)+1]=masterIntgralsInSector[i];
-            }
-          }
-          print("completed the computation in the sector:"+string(k)+ " at layer "+string(j)+". ");
-          
-return(list(reducedIBPs,MI));
-}
-example{
-  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
-  list targetInt = list(list(1, 1, 1, -1, -3, 1, -1, -1, -1), list(1, -1, 1, -1, -3, -1, -1, -4, -1));
+  list targetInt=list(list(1,1,1,-1,-3,1,-1,-1,-1),list(1,-1,1,-1,-3,-1,-1,-4,-1));
   //list targetInt=list(list(1,2,1,-1,-3,-1,-1,-1,-1),list(1,-1,1,-1,-3,-1,-1,-4,-1));
   //list targetInt=list(list(1,1,1,1,1,1,1,-5,0),list(1,1,1,1,1,1,1,0,-5),list(0,1,1,1,1,1,1,-5,0),list(1,0,1,1,1,1,1,0,-5),list(1,1,0,1,1,1,1,-5,0),list(1,1,1,0,1,1,1,0,-5),list(1,1,1,1,0,1,1,-5,0),list(1,1,1,1,1,0,1,0,-5),list(1,1,1,1,1,1,0,-5,0),list(0,1,1,1,1,1,1,0,-5),list(1,0,1,1,1,1,1,-5,0),list(1,1,0,1,1,1,1,0,-5),list(1,1,1,0,1,1,1,-5,0),list(1,1,1,1,0,1,1,0,-5),list(1,1,1,1,1,0,1,-5,0),list(1,1,1,1,1,1,0,0,-5));
   //list targetInt=list(list(1,1,1,1,1,1,1,-5,0));
@@ -2617,6 +2341,183 @@ example{
   I;
   size(finalset[2]);
 }
+
+
+
+
+
+proc getReducedIBPSystem(graph G, list targetInt)
+"USAGE:  getReducedIBPSystem(G,targetInt); targetInt list, G graph@*,
+ASSUME:  G is a graph and targetInt is a list of seeds of target integrals. 
+RETURN:  list (reducedIBPs,MI) where  reducedIBPs::setIBP, MI::list.
+          reducedIBPs contain the reduced IBP system for the target integrals
+          MI contain the master integrals
+
+KEYWORDS: Feynman graph, IBPs
+"
+{
+
+
+graph G = makeGraph(
+  list(1,2,3,4,5,6), 
+  list(
+      list(6,1), list(4,6), list(1,2), list(3,5), 
+      list(4,3), list(2,5), list(5,6), list(1), 
+      list(2), list(3), list(4)
+  )
+);
+
+// Define a list of target integrals
+list targetInt = list(
+  list(1, 1, 1, -1, -3, 1, -1, -1, -1), 
+  list(1, -1, 1, -1, -3, -1, -1, -4, -1)
+);
+    if (size(targetInt) == 0) {
+        ERROR("Empty target integral list provided.");
+    }
+
+    // Debug: Ensure the input graph G and target integrals are correctly passed
+    print("Graph G: " + string(G));
+    print("Target Integrals: " + string(targetInt));
+
+    list L = pickHighestSector(targetInt);
+    if (size(L) == 0) {
+        ERROR("pickHighestSector returned an empty list.");
+    }
+
+    if (size(L) > 1) {
+        ERROR("Provided integrals belong to more than one integral class.");
+    }
+
+    list web = generateWebSectors(L[1][1]);
+    web = setSectorMap(web);
+
+    print("Generated web: " + string(web));
+
+    list w4 = updateWeb(web, list(1,1), targetInt);
+    web = w4[1];
+
+    print("Size of updated web: " + string(size(web)));
+    labeledgraph G1 = computeBaikovMatrix(G);
+    setIBP reducedIBPs;
+    list MI;
+
+    print("Size of targetInt: " + string(size(targetInt)));
+
+    int te = 0;
+    reducedIBPs.seed = targetInt;
+
+    int j = 1;
+    if (size(web) < j) {
+        ERROR("Web list does not contain layer j=" + string(j));
+    }
+
+    int nSectors = size(web[j]);
+    if (nSectors == 0) {
+        ERROR("No sectors available in web[" + string(j) + "]");
+    }
+
+    int k = 1;
+    if (size(web[j]) < k) {
+        ERROR("Web[" + string(j) + "] does not contain sector k=" + string(k));
+    }
+
+    print("Computing IBP for sector: " + string(web[j][k].targetInts));
+
+    setIBP totalIBP = computeManyIBP(G1, web[j][k].targetInts);
+    print("Size of totalIBP.IBP: " + string(size(totalIBP.IBP)));
+
+    if (te == 0) {
+        reducedIBPs.over = totalIBP.over;
+        te = 1;
+    }
+
+    if (reducedIBPs.over == 0) {
+        ERROR("totalIBP.over is not initialized correctly.");
+    }
+
+    ring R = reducedIBPs.over;
+    setring R;
+
+    list L = getRedIBPs(totalIBP, 101);
+    if (size(L) < 2) {
+        ERROR("getRedIBPs did not return expected two lists.");
+    }
+
+    list indpndIBP = L[1];
+    print("Size of indpndIBP: " + string(size(indpndIBP)));
+
+    list masterAndTailIntgrals = L[2];
+    print("Size of masterAndTailIntgrals: " + string(size(masterAndTailIntgrals)));
+
+    if (size(reducedIBPs.IBP) == 0) {
+        reducedIBPs.IBP = indpndIBP;
+    } else {
+        for (int i = 1; i <= size(indpndIBP); i++) {
+            reducedIBPs.IBP[size(reducedIBPs.IBP) + 1] = indpndIBP[i];
+        }
+    }
+
+    kill R;
+
+    print("Size of masterAndTailIntgrals = " + string(size(masterAndTailIntgrals)));
+
+    list w = updateWeb(web, list(j, k), masterAndTailIntgrals);
+    web = w[1];
+
+    print("w[2] = " + string(w[2])); // Fixed debug message
+
+    list masterIntgralsInSector = w[2];
+    print("Size of masterIntgralsInSector = " + string(size(masterIntgralsInSector)));
+
+    if (size(MI) == 0) {
+        MI = masterIntgralsInSector;
+    } else {
+        for (int i = 1; i <= size(masterIntgralsInSector); i++) {
+            if (alreadyIntheList(MI, masterIntgralsInSector[i]) == 0) {
+                MI[size(MI) + 1] = masterIntgralsInSector[i];
+            }
+        }
+    }
+
+    print("Completed computation in sector: " + string(k) + " at layer " + string(j) + ".");
+
+    return list(reducedIBPs, MI);
+}
+
+example{
+// Define a sample Feynman graph G
+graph G = makeGraph(
+  list(1,2,3,4,5,6), 
+  list(
+      list(6,1), list(4,6), list(1,2), list(3,5), 
+      list(4,3), list(2,5), list(5,6), list(1), 
+      list(2), list(3), list(4)
+  )
+);
+
+// Define a list of target integrals
+list targetInt = list(
+  list(1, 1, 1, -1, -3, 1, -1, -1, -1), 
+  list(1, -1, 1, -1, -3, -1, -1, -4, -1)
+);
+
+// Call the function
+list result = getReducedIBPSystem(G, targetInt);
+
+// Extract results
+setIBP reducedIBPs = result[1];
+list MI = result[2];
+
+// Print results
+print("Reduced IBPs: " + string(reducedIBPs));
+print("Master Integrals: " + string(MI));
+}
+
+
+
+
+
 
 
 

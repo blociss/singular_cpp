@@ -1,11 +1,8 @@
 
->  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
-  labeledgraph G1=computeBaikovMatrix(G);
-[DEBUG] ring RP = G1.overpoly = (QQ),(p(1),p(2),p(3),p(4),q(1),q(2),q(3),q(4),q(5),q(6),q(7)),(ip(11),C)
-[DEBUG] ring R = G1.over = (0,p(1),p(2),p(3),p(4)),(q(1),q(2),q(3),q(4),q(5),q(6),q(7)),(ip(7),C)
 [DEBUG] Starting removeElimVars
 [DEBUG] R =G.over = (0,p(1),p(2),p(3),p(4)),(q(1),q(2),q(3),q(4),q(5),q(6),q(7)),(ip(7),C)
 [DEBUG] RP =G.overpoly = (QQ),(p(1),p(2),p(3),p(4),q(1),q(2),q(3),q(4),q(5),q(6),q(7)),(ip(11),C)
+[DEBUG] el =G.elimvars = (p(4)),q(3),q(4),q(5),q(6),q(7)
 [DEBUG] lb =G.labels = q(1),q(2),q(1)+(-p(1)),-q(2)+(p(1)+p(2)),-q(2)+(p(1)+p(2)+p(3)),q(1)+(-p(1)-p(2)),-q(2)+q(1),(p(1)),(p(2)),(p(3)),(-p(1)-p(2)-p(3))
 [DEBUG] el[i] = (p(4))
 [DEBUG] rvar(el[i]) = 3
@@ -20,7 +17,12 @@
 [DEBUG] R1 after removing variable 5 = (0,p(1),p(2),p(3),p(4)),(q(1),q(2),q(3),q(4)),(ip(4),C)
 [DEBUG] R1 after removing variable 4 = (0,p(1),p(2),p(3),p(4)),(q(1),q(2),q(3)),(ip(3),C)
 [DEBUG] R1 after removing variable 3 = (0,p(1),p(2),p(3),p(4)),(q(1),q(2)),(ip(2),C)
+[DEBUG] R1=G.over before removing parameter 4 = (0,p(1),p(2),p(3),p(4)),(q(1),q(2)),(ip(2),C)
 [DEBUG] R1 after removing parameter 4 = (0,p(1),p(2),p(3)),(q(1),q(2)),(ip(2),C)
+[DEBUG] el before setting ring RP = (p(4)),q(3),q(4),q(5),q(6),q(7)
+[DEBUG] RP =G.overpoly = (QQ),(p(1),p(2),p(3),p(4),q(1),q(2),q(3),q(4),q(5),q(6),q(7)),(ip(11),C)
+[DEBUG] el before imap = 
+[DEBUG] el after imap = p(4),q(3),q(4),q(5),q(6),q(7)
 [DEBUG] el[i] = p(4)
 [DEBUG] el[i] = q(3)
 [DEBUG] el[i] = q(4)
@@ -39,12 +41,7 @@
 [DEBUG] RP1 after removing variable 7 = (QQ),(p(1),p(2),p(3),p(4),q(1),q(2)),(ip(6),C)
 [DEBUG] RP1 before removing variable 4 = (QQ),(p(1),p(2),p(3),p(4),q(1),q(2)),(ip(6),C)
 [DEBUG] RP1 after removing variable 4 = (QQ),(p(1),p(2),p(3),q(1),q(2)),(ip(5),C)
+[DEBUG] lb before mapping = 
+[DEBUG] lb after mapping = 
 [DEBUG] tr = q(1),q(2),q(1)+(-p(1)),-q(2)+(p(1)+p(2)),-q(2)+(p(1)+p(2)+p(3)),q(1)+(-p(1)-p(2)),-q(2)+q(1),(p(1)),(p(2)),(p(3)),(-p(1)-p(2)-p(3))
-[DEBUG] ring RP = G2.overpoly = (QQ),(p(1),p(2),p(3),q(1),q(2)),(ip(5),C)
-[DEBUG] ring R = G2.over = (0,p(1),p(2),p(3)),(q(1),q(2)),(ip(2),C)
-The ring R =G0.over = (0,p(1),p(2),p(3)),(q(1),q(2)),(ip(2),C)
-The ring RP =G0.overpoly =  (QQ),(p(1),p(2),p(3),q(1),q(2)),(ip(5),C)
-The ring R =G.over = (0,p(1),p(2),p(3)),(q(1),q(2)),(ip(2),C)
-The ring RP =G.overpoly =  (QQ),(p(1),p(2),p(3),q(1),q(2)),(ip(5),C)
-The ideal gram = 0,0,0,p(1)*q(1),p(1)*q(2),0,0,0,p(2)*q(1),p(2)*q(2),0,0,0,p(3)*q(1),p(3)*q(2),p(1)*q(1),p(2)*q(1),p(3)*q(1),q(1)^2,q(1)*q(2),p(1)*q(2),p(2)*q(2),p(3)*q(2),q(1)*q(2),q(2)^2
 > 

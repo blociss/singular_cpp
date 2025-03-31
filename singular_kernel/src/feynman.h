@@ -72,7 +72,6 @@ LabeledGraph eliminateVariables(LabeledGraph G);
 ideal propagators(const LabeledGraph& G);
 ideal feynmanDenominators(const LabeledGraph& G);
 ideal ISP(const LabeledGraph& G);
-void removeElimVars(LabeledGraph& G);
 // Compute Baikov matrix for a labeled graph
 /**
  * @brief Computes the Baikov matrix for a labeled graph
@@ -105,7 +104,8 @@ ideal balancingIdeal(const LabeledGraph& G);
 LabeledGraph substituteGraph(LabeledGraph G, poly lhs, poly rhs);
 LabeledGraph eliminateVariables(LabeledGraph G);
 ring removeVariable(ring R, int j);
-
+ring removeParameter(ring R, int j);
+LabeledGraph removeElimVars(const LabeledGraph& G);
 // Create a ring with specified variables and extension field
 ring createRing(char **extNames, int extCount, char **varNames, int varCount, rRingOrder_t varOrdering);
 
