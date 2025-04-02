@@ -83,14 +83,46 @@ CMakeFiles/createring_test.dir/createring_test.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/createring_test.dir/createring_test.cpp.s"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/createring_test.cpp -o CMakeFiles/createring_test.dir/createring_test.cpp.s
 
+CMakeFiles/createring_test.dir/creating_main.cpp.o: CMakeFiles/createring_test.dir/flags.make
+CMakeFiles/createring_test.dir/creating_main.cpp.o: ../creating_main.cpp
+CMakeFiles/createring_test.dir/creating_main.cpp.o: CMakeFiles/createring_test.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/createring_test.dir/creating_main.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/createring_test.dir/creating_main.cpp.o -MF CMakeFiles/createring_test.dir/creating_main.cpp.o.d -o CMakeFiles/createring_test.dir/creating_main.cpp.o -c /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/creating_main.cpp
+
+CMakeFiles/createring_test.dir/creating_main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/createring_test.dir/creating_main.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/creating_main.cpp > CMakeFiles/createring_test.dir/creating_main.cpp.i
+
+CMakeFiles/createring_test.dir/creating_main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/createring_test.dir/creating_main.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/creating_main.cpp -o CMakeFiles/createring_test.dir/creating_main.cpp.s
+
+CMakeFiles/createring_test.dir/feynman.cpp.o: CMakeFiles/createring_test.dir/flags.make
+CMakeFiles/createring_test.dir/feynman.cpp.o: ../feynman.cpp
+CMakeFiles/createring_test.dir/feynman.cpp.o: CMakeFiles/createring_test.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/createring_test.dir/feynman.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/createring_test.dir/feynman.cpp.o -MF CMakeFiles/createring_test.dir/feynman.cpp.o.d -o CMakeFiles/createring_test.dir/feynman.cpp.o -c /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/feynman.cpp
+
+CMakeFiles/createring_test.dir/feynman.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/createring_test.dir/feynman.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/feynman.cpp > CMakeFiles/createring_test.dir/feynman.cpp.i
+
+CMakeFiles/createring_test.dir/feynman.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/createring_test.dir/feynman.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/feynman.cpp -o CMakeFiles/createring_test.dir/feynman.cpp.s
+
 # Object files for target createring_test
 createring_test_OBJECTS = \
-"CMakeFiles/createring_test.dir/createring_test.cpp.o"
+"CMakeFiles/createring_test.dir/createring_test.cpp.o" \
+"CMakeFiles/createring_test.dir/creating_main.cpp.o" \
+"CMakeFiles/createring_test.dir/feynman.cpp.o"
 
 # External object files for target createring_test
 createring_test_EXTERNAL_OBJECTS =
 
 createring_test: CMakeFiles/createring_test.dir/createring_test.cpp.o
+createring_test: CMakeFiles/createring_test.dir/creating_main.cpp.o
+createring_test: CMakeFiles/createring_test.dir/feynman.cpp.o
 createring_test: CMakeFiles/createring_test.dir/build.make
 createring_test: libsingular_functions.a
 createring_test: /home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-4.4.0p2-k7rgdkzo5prqsvxjckejvcdvxgjr64bk/lib/libSingular-4.4.0.so
@@ -104,7 +136,7 @@ createring_test: /home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.
 createring_test: /home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-4.4.0p2-k7rgdkzo5prqsvxjckejvcdvxgjr64bk/lib/libsingular_resources-4.4.0.so
 createring_test: /home/atraore/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.3.0/singular-4.4.0p2-k7rgdkzo5prqsvxjckejvcdvxgjr64bk/lib/libsingular_resources.so
 createring_test: CMakeFiles/createring_test.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable createring_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/atraore/gpi/try_gpi/singular_cpp/singular_kernel/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable createring_test"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/createring_test.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

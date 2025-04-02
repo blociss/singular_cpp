@@ -53,7 +53,7 @@ int main() {
     std::cout << "[DEBUG] lG2.over and lG2.overpoly ring: " << rString(lG2.over) << " \n" << rString(lG2.overpoly) << std::endl;
    std::cout<<"printing labeled graph from removeElimVars\n";
     printLabeledGraph(lG2);
-    /*
+    
     std::cout<<"******computing feynman denominators******\n"; 
    ideal J = feynmanDenominators(lG2);
     printIdeal(J);
@@ -67,8 +67,8 @@ int main() {
     std::cout<<"[DEBUG] type of G: "<<typeid(G).name()<<std::endl;
     LabeledGraph B = computeBaikovMatrix(G);
     std::cout<<"[DEBUG] Printing Baikov matrix\n";
-    printLabeledGraph(B); */
+    printLabeledGraph(B); 
     // Cleanup (remember to clean up rings, ideals, and lists properly)
-   // rKill(lG.over);
+    rKill(lG.over);
     return 0;
 }

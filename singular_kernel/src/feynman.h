@@ -1,5 +1,16 @@
+
+// feynman.h
 #ifndef FEYNMAN_H
 #define FEYNMAN_H
+
+#include <singular/Singular/libsingular.h>
+#include <flint/fmpq_mat.h>
+
+// Declarations
+ring createRing(char **extNames, int extCount, char **varNames, int varCount, rRingOrder_t varOrdering);
+void printMatrix(const matrix m);
+matrix convFlintFmpqMatSingM(fmpq_mat_t mat, const ring R);
+void print_fmpq_mat(const char* label, const fmpq_mat_t mat);
 
 #include <Singular/libsingular.h>
 #include <vector>

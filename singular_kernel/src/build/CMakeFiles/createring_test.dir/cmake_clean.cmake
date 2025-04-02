@@ -1,6 +1,10 @@
 file(REMOVE_RECURSE
   "CMakeFiles/createring_test.dir/createring_test.cpp.o"
   "CMakeFiles/createring_test.dir/createring_test.cpp.o.d"
+  "CMakeFiles/createring_test.dir/creating_main.cpp.o"
+  "CMakeFiles/createring_test.dir/creating_main.cpp.o.d"
+  "CMakeFiles/createring_test.dir/feynman.cpp.o"
+  "CMakeFiles/createring_test.dir/feynman.cpp.o.d"
   "createring_test"
   "createring_test.pdb"
 )

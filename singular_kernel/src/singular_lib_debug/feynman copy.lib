@@ -804,7 +804,7 @@ print("[DEBUG] I = ISP(G) = " + string(I));
 ideal PI=P,I;
 print("[DEBUG] PI = P,I = " + string(PI));
 setring RP;
-ideal PI_mapped = imap(R,PI);
+ideal PI = imap(R,PI);
 print("[DEBUG] PI = imap(R,PI) = " + string(PI));
 int i,j;
 ideal gram;
@@ -821,22 +821,21 @@ for (i = 1;i<=nvars(RP);i++){
    }
 }
 print("The ideal gram = " + string(gram));
-print( "size of gram = " + string(size(gram)));
+print("[DEBUG] startvars = " + string(startvars));
 for (i = 1;i<startvars;i++){
    for (j = i+1;j<startvars;j++){
-      PI_mapped=PI_mapped,var(i)*var(j);
+    print("[DEBUG] var(i)*var(j) = " + string(var(i)*var(j)));
+      PI=PI,var(i)*var(j);
   }
 }
-print("[DEBUG] PI_mapped  = " + string(PI_mapped));
-print("size of PI_mapped =" + string(size(PI_mapped)));
-matrix A = lift(PI_mapped,gram);
-print("[DEBUG] size of A = lift(PI_mapped,gram) = " + string(size(A)));
-print("[DEBUG] A = lift(PI_mapped,gram) = ");
+print("[DEBUG] PI =PI,var(i)*var(j) = " + string(PI));
+matrix A = lift(PI,gram);
+print("[DEBUG] A = lift(PI,gram) = ");
 print(A);
 int m = npars(R);
 int m2 = (m*(m-1)) div 2;
 int mt= m2-1;
-int n = ncols(PI_mapped)-m2;
+int n = ncols(PI)-m2;
 ring Z = (0,(t(1..mt),D)),(z(1..n)),dp; //change this
 print("[DEBUG] ring Z = (0,(t(1..mt),D)),(z(1..n)),dp; = " + string(Z));
 //ring Z = (0,t(1..mt)),(z(1..n)),dp;
@@ -2508,49 +2507,73 @@ graph G = makeGraph(
       list(2), list(3), list(4)
   )
 );
+
+// Define a list of target integrals
+list targetInt = list(
+  list(1, 1, 1, -1, -3, 1, -1, -1, -1), 
+  list(1, -1, 1, -1, -3, -1, -1, -4, -1)
+);
+
+// Call the function
+list result = getReducedIBPSystem(G, targetInt);
+
+// Extract results
+setIBP reducedIBPs = result[1];
+list MI = result[2];
+
+// Print results
+print("Reduced IBPs: " + string(reducedIBPs));
+print("Master Integrals: " + string(MI));
 }
 
-example {
-  "EXAMPLE:"; echo = 2;
-  
-  // Create a simple Feynman diagram with 3 vertices and 3 edges
-  // First, create the vertices list
-  list vertices = list(intvec(1), intvec(2), intvec(3));
-  
-  // Create the edges list (both internal and external)
-  // Internal edges: [1,2], [2,3]
-  // External edge: [1]
-  list edges = list(
-    list(intvec(1,2)),  // internal edge
-    list(intvec(2,3)),  // internal edge
-    list(intvec(1))     // external edge
-  );
-  
-  // Create the base graph
-  Graph G = makeGraph(vertices, edges);
-  
-  // Label the graph (this creates the necessary rings and labels)
-  LabeledGraph lG = labelGraph(G, 0);
-  
-  // Print the labeled graph to see its structure
-  printLabeledGraph(lG);
-  
-  // Eliminate variables
-  LabeledGraph G1 = eliminateVariables(lG);
-  
-  // Remove eliminated variables
-  LabeledGraph G2 = removeElimVars(G1);
-  
-  // Compute the Baikov matrix
-  LabeledGraph G3 = computeBaikovMatrix(G2);
-  
-  // Print the final Baikov matrix
-  if (G3.baikovmatrix) {
-    printMatrix(G3.baikovmatrix);
-  }
-  
-  // Clean up
-  rKill(G3.baikovover);
-  rKill(G3.over);
-  rKill(G3.overpoly);
+
+// Define a list of target integrals
+list targetInt = list(
+  list(1, 1, 1, -1, -3, 1, -1, -1, -1), 
+  list(1, -1, 1, -1, -3, -1, -1, -4, -1)
+);
+
+// Call the function
+list result = getReducedIBPSystem(G, targetInt);
+
+// Extract results
+setIBP reducedIBPs = result[1];
+list MI = result[2];
+
+// Print results
+print("Reduced IBPs: " + string(reducedIBPs));
+print("Master Integrals: " + string(MI));
 }
+list merge_unique(list A, list B)
+{
+  list C = A;
+  int found;
+  for (int i = 1; i <= size(B); i++)
+  {
+    found = 0;
+    for (int j = 1; j <= size(A); j++)
+    {
+      if (B[i] == A[j])  // Replace with deep check if needed
+      {
+        found = 1;
+        break;
+      }
+    }
+    if (!found)
+    {
+      C[size(C)+1] = B[i];
+    }
+  }
+  return C;
+}
+feynman combined;
+combined.MI.masterIntegrals = merge_unique(data1.MI.masterIntegrals, data2.MI.masterIntegrals);
+combined.reducedIBPs.IBP = merge_unique(data1.reducedIBPs.IBP, data2.reducedIBPs.IBP);
+combined.web.rows = merge_unique(data1.web.rows, data2.web.rows);
+
+// Merge seed list 
+combined.reducedIBPs.seed = merge_unique(data1.reducedIBPs.seed, data2.reducedIBPs.seed);
+combined.reducedIBPs.over = data1.reducedIBPs.over; // assuming same ring
+combined.MI = combined.MI;
+combined.reducedIBPs = combined.reducedIBPs;
+combined.web = combined.web;

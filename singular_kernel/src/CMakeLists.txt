@@ -88,6 +88,9 @@ add_library(singular_functions
 # Add executable
 add_executable(createring_test 
     createring_test.cpp
+    creating_main.cpp
+    feynman.cpp
+    
 )
 
 # Find Singular libraries

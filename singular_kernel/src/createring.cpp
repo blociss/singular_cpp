@@ -1,166 +1,104 @@
-    #include <iostream>
-    #include <singular/Singular/libsingular.h>
-    #include <singular/polys/ext_fields/transext.h>
-    #include <singular/polys/monomials/ring.h>
-    #include <singular/Singular/maps_ip.h>
-    #include <singular/Singular/ipid.h>
-    #include <singular/polys/simpleideals.h>
-    #include <singular/coeffs/numbers.h> // For n_SetMap
-    #include <singular/polys/prCopy.h>
- ring createRing(char **extNames, int extCount, char **varNames, int varCount, rRingOrder_t varOrdering) {
-        // Create base coefficient field
-        std::cout << "[DEBUG] Creating base coefficient field" << std::endl;
-        coeffs cf = nInitChar(n_Q, NULL);
-        if (!cf) return NULL;
+#include <iostream>
+#include <vector>
+#include <singular/Singular/libsingular.h>
+#include <singular/polys/ext_fields/transext.h>
+#include <singular/polys/monomials/ring.h>
 
-        // Create extension field if needed
-        ring extRing = NULL;
-        if (extCount > 0) {
-            // Create extension ring with default ordering
-            extRing = rDefault(cf, extCount, extNames);
-            if (!extRing) {
-                nKillChar(cf);
-                return NULL;
-            }
+// Function to create a ring with extension field and variables
+ring createExtendedPolyRing(int ct, int anzq) {
+    std::cout << "[DEBUG] Starting createExtendedPolyRing" << std::endl;
+    // Step 1: Create base coefficient field QQ
+    coeffs baseCoeff = nInitChar(n_Q, NULL);
+    if (!baseCoeff) {
+        std::cerr << "[ERROR] Failed to create base coefficient field QQ" << std::endl;
+        return NULL;
+    }
+    std::cout << "[DEBUG] Created base coefficient field QQ" << std::endl;
 
-            // Create extension coefficient field
-            TransExtInfo extParam;
-            extParam.r = extRing;
-            coeffs extCf = nInitChar(n_transExt, &extParam);
-
-            // Clean up and check
-            rKill(extRing);
-            nKillChar(cf);
-            
-            if (!extCf) return NULL;
-            cf = extCf;
-        }
-    
-        // Create variable names array
-        char **vars = (char **)omAlloc0(varCount * sizeof(char *));
-        if (!vars) {
-            nKillChar(cf);
-            return NULL;
-        }
-
-        // Copy variable names
-        for (int i = 0; i < varCount; ++i) {
-            vars[i] = omStrDup(varNames[i]);
-            if (!vars[i]) {
-                for (int j = 0; j < i; ++j) omFree(vars[j]);
-                omFree(vars);
-                nKillChar(cf);
-                return NULL;
-            }
-        }
-    
-        // Create ring with specified ordering
-        ring R = rDefault(cf, varCount, vars, varOrdering);
-        // Clean up variable names
-        for (int i = 0; i < varCount; ++i) omFree(vars[i]);
-        omFree(vars);
-
-        if (!R) {
-            nKillChar(cf);
-            return NULL;
-        }
-
-        // Initialize ring
-        rComplete(R);
-
-        return R;
+    // Step 2: Create coefficient ring QQ(p(1), ..., p(ct)) with dp ordering
+    std::vector<char*> varsCoeff;
+    for (int i = 1; i <= ct; ++i) {
+        std::string name = "p(" + std::to_string(i) + ")";
+        varsCoeff.push_back(omStrDup(name.c_str()));
+        std::cout << "[DEBUG] Added parameter: " << name << std::endl;
     }
 
-    int main() {
+    ring coeffRing = rDefault(baseCoeff, ct, varsCoeff.data(), ringorder_dp);
+    if (!coeffRing) {
+        std::cerr << "[ERROR] Failed to create coefficient ring" << std::endl;
+        nKillChar(baseCoeff);
+        for (char* var : varsCoeff) omFree(var);
+        return NULL;
+    }
+    rComplete(coeffRing);
+    std::cout << "[DEBUG] Created coefficient ring: " << rString(coeffRing) << std::endl;
+
+    // Step 3: Create transcendental extension field QQ(p(1), ..., p(ct))
+    TransExtInfo param = {coeffRing};
+    coeffs extCoeff = nInitChar(n_transExt, &param);
+    if (!extCoeff) {
+        std::cerr << "[ERROR] Failed to create extension coefficient field" << std::endl;
+        rDelete(coeffRing);
+        nKillChar(baseCoeff);
+        for (char* var : varsCoeff) omFree(var);
+        return NULL;
+    }
+    std::cout << "[DEBUG] Extension coefficient field created: QQ(p(1)..p(" << ct << "))" << std::endl;
+
+    // Clean up base coefficient field (no longer needed after extension)
+    nKillChar(baseCoeff);
+
+    // Step 4: Create polynomial ring R: QQ(p(1), ..., p(ct))[q(1), ..., q(anzq)], ip ordering
+    std::vector<char*> varsR;
+    std::cout << "[DEBUG] Creating variables for ring R:" << std::endl;
+    for (int i = 1; i <= anzq; ++i) {
+        std::string name = "q(" + std::to_string(i) + ")";
+        varsR.push_back(omStrDup(name.c_str()));
+        std::cout << "[DEBUG] Added variable: " << name << std::endl;
+    }
+
+    ring R = rDefault(extCoeff, anzq, varsR.data(), ringorder_ip);
+    if (!R) {
+        std::cerr << "[ERROR] Failed to create polynomial ring R" << std::endl;
+        nKillChar(extCoeff);
+        rDelete(coeffRing);
+        for (char* var : varsCoeff) omFree(var);
+        for (char* var : varsR) omFree(var);
+        return NULL;
+    }
+    rComplete(R);
+
+    // Clean up variable names
+    for (char* var : varsCoeff) omFree(var);
+    for (char* var : varsR) omFree(var);
+
+    std::cout << "[DEBUG] Created polynomial ring R: " << rString(R) << std::endl;
+    rWrite(R);
+    std::cout << std::endl;
+
+    return R;
+}
+
+int main() {
+    // Initialize Singular library
     siInit((char*)"/home/atraore/Singular4/lib/libSingular.so");
     std::cout << "[DEBUG] Initializing Singular" << std::endl;
 
-    // Create base coefficient field QQ (rationals)
-    coeffs cf = nInitChar(n_Q, NULL);
-    if (!cf) {
-        std::cerr << "Failed to create coefficient field QQ\n";
-        return 1;
-    }
-    std::cout << "[DEBUG] Created coefficient field QQ" << std::endl;
-
-    // Define all variables explicitly
-    char *vars[] = {
-        (char*)"p(1)", (char*)"p(2)", (char*)"p(3)", (char*)"p(4)",
-        (char*)"q(1)", (char*)"q(2)", (char*)"q(3)", (char*)"q(4)",
-        (char*)"q(5)", (char*)"q(6)", (char*)"q(7)"
-    };
-    int varCount = 11;
-
-    std::cout << "[DEBUG] Creating ring with " << varCount << " variables and dp ordering" << std::endl;
-
-    // Create ring with dp ordering
-    ring P = rDefault(cf, varCount, vars, ringorder_ip);
-    if (!P) {
-        std::cerr << "Failed to create ring\n";
-        nKillChar(cf);
+    // Create ring with 4 parameters and 7 variables
+    int ct = 4;    // Number of parameters p(1), ..., p(4)
+    int anzq = 7;  // Number of variables q(1), ..., q(7)
+    ring R = createExtendedPolyRing(ct, anzq);
+    if (!R) {
+        std::cerr << "[ERROR] Failed to create ring" << std::endl;
         return 1;
     }
 
-    rComplete(P);
+    // Set as current ring
+    rChangeCurrRing(R);
 
-    // Set current ring
-    rChangeCurrRing(P);
-
-    // Print ring details (clean output)
-    std::cout << "[DEBUG] Created ring: " << rString(P) << std::endl;
-    std::cout << "Ring details:\n";
-    rWrite(P);
-    std::cout << "\nRing created with: " << rString(P) << "\n";
-
-    // Test different mapping approaches
-    ring R1 = rCopy0(P); // Create a copy of P
-    rComplete(R1);
-    
-    // Create a test polynomial in P
-    poly p = p_ISet(1, P);
-    p_SetExp(p, 1, 1, P); // Set x_1^1
-    p_Setm(p, P);
-    std::cout << "\nTest polynomial in P: " << p_String(p, P) << std::endl;
-    
-    // Try different mapping approaches
-    std::cout << "\nTesting mapping approaches:\n";
-    
-    // 1. Using prCopyR
-    rChangeCurrRing(R1);
-    poly p1 = prCopyR(p, P, R1);
-    std::cout << "1. prCopyR result: " << (p1 ? p_String(p1, R1) : "NULL") << std::endl;
-    
-    // 2. Using p_PermPoly
-    int *perm = (int*)omAlloc0((rVar(P) + 1) * sizeof(int));
-    for (int i = 0; i <= rVar(P); i++) perm[i] = i;
-    poly p2 = p_PermPoly(p, perm, P, R1, NULL, NULL, 0, FALSE);
-    std::cout << "2. p_PermPoly result: " << (p2 ? p_String(p2, R1) : "NULL") << std::endl;
-    
-    // 3. Using nSetMap and manual copying
-    nMapFunc nMap = n_SetMap(P->cf, R1->cf);
-    if (nMap) {
-        poly p3 = p_Init(R1);
-        number n = nMap(pGetCoeff(p), R1->cf);
-        p_SetCoeff0(p3, n, R1);
-        for (int i = 1; i <= rVar(P); i++) {
-            p_SetExp(p3, i, p_GetExp(p, i, P), R1);
-        }
-        p_Setm(p3, R1);
-        std::cout << "3. Manual mapping result: " << p_String(p3, R1) << std::endl;
-        p_Delete(&p3, R1);
-    } else {
-        std::cout << "3. Manual mapping failed: nMap is NULL" << std::endl;
-    }
-    
     // Clean up
-    omFreeSize((ADDRESS)perm, (rVar(P) + 1) * sizeof(int));
-    p_Delete(&p, P);
-    p_Delete(&p1, R1);
-    p_Delete(&p2, R1);
-    rDelete(R1);
-
-    // Cleanup
-    rKill(P);
+    rDelete(R);
+    std::cout << "[DEBUG] Ring deleted, program complete" << std::endl;
 
     return 0;
 }

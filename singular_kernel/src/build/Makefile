@@ -211,6 +211,54 @@ createring_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/createring_test.dir/build.make CMakeFiles/createring_test.dir/createring_test.cpp.s
 .PHONY : createring_test.cpp.s
 
+creating_main.o: creating_main.cpp.o
+.PHONY : creating_main.o
+
+# target to build an object file
+creating_main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/createring_test.dir/build.make CMakeFiles/createring_test.dir/creating_main.cpp.o
+.PHONY : creating_main.cpp.o
+
+creating_main.i: creating_main.cpp.i
+.PHONY : creating_main.i
+
+# target to preprocess a source file
+creating_main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/createring_test.dir/build.make CMakeFiles/createring_test.dir/creating_main.cpp.i
+.PHONY : creating_main.cpp.i
+
+creating_main.s: creating_main.cpp.s
+.PHONY : creating_main.s
+
+# target to generate assembly for a file
+creating_main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/createring_test.dir/build.make CMakeFiles/createring_test.dir/creating_main.cpp.s
+.PHONY : creating_main.cpp.s
+
+feynman.o: feynman.cpp.o
+.PHONY : feynman.o
+
+# target to build an object file
+feynman.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/createring_test.dir/build.make CMakeFiles/createring_test.dir/feynman.cpp.o
+.PHONY : feynman.cpp.o
+
+feynman.i: feynman.cpp.i
+.PHONY : feynman.i
+
+# target to preprocess a source file
+feynman.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/createring_test.dir/build.make CMakeFiles/createring_test.dir/feynman.cpp.i
+.PHONY : feynman.cpp.i
+
+feynman.s: feynman.cpp.s
+.PHONY : feynman.s
+
+# target to generate assembly for a file
+feynman.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/createring_test.dir/build.make CMakeFiles/createring_test.dir/feynman.cpp.s
+.PHONY : feynman.cpp.s
+
 singular_functions.o: singular_functions.cpp.o
 .PHONY : singular_functions.o
 
@@ -252,6 +300,12 @@ help:
 	@echo "... createring_test.o"
 	@echo "... createring_test.i"
 	@echo "... createring_test.s"
+	@echo "... creating_main.o"
+	@echo "... creating_main.i"
+	@echo "... creating_main.s"
+	@echo "... feynman.o"
+	@echo "... feynman.i"
+	@echo "... feynman.s"
 	@echo "... singular_functions.o"
 	@echo "... singular_functions.i"
 	@echo "... singular_functions.s"

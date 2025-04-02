@@ -1763,26 +1763,45 @@ LabeledGraph computeBaikovMatrix(const Graph& G0) {
     rChangeCurrRing(savedRing);
     return result;
 }
+#include <sstream> // For matrixToString
+
+std::string matrixToString(matrix m, const ring R) {
+    std::stringstream ss;
+    for (int i = 0; i < MATROWS(m); ++i) {
+        for (int j = 0; j < MATCOLS(m); ++j) {
+            poly entry = MATELEM(m, i + 1, j + 1);
+            if (entry) {
+                char* s = p_String(entry, R);
+                ss << s << ",";
+                omFree(s);
+            } else {
+                ss << "0,";
+            }
+        }
+        ss << "\n";
+    }
+    return ss.str();
+}
+
 LabeledGraph computeBaikovMatrix(const LabeledGraph& G0) {
-    std::cout << "[DEBUG] computeBaikovMatrix started" << std::endl;
-
-    // Declare idx at function scope
-    int idx = 0;
-
-    // Step 1: Copy the input labeled graph
+    std::cout << "[DEBUG] computeBaikovMatrix started for LabeledGraph" << std::endl;
+    
     std::cout << "[DEBUG] Deep copying labeled graph" << std::endl;
     LabeledGraph G = G0;
-    printLabeledGraph(G);
-
-    // Step 2: Compute propagators and ISP
+    
     ring savedRing = currRing;
     rChangeCurrRing(G.over);
+    std::cout << "[DEBUG] Initial ring R = G.over = " << rString(G.over) << std::endl;
+    std::cout << "[DEBUG] Initial ring RP = G.overpoly = " << rString(G.overpoly) << std::endl;
+    
     std::cout << "[DEBUG] Computing propagators P" << std::endl;
     ideal P = propagators(G);
     printIdeal(P);
-    std::cout << "[DEBUG] Computing ISP" << std::endl;
+    
+    std::cout << "[DEBUG] Computing ISP I" << std::endl;
     ideal I = ISP(G);
     printIdeal(I);
+    
     std::cout << "[DEBUG] Combining P and I to PI" << std::endl;
     ideal PI = id_Add(P, I, G.over);
     printIdeal(PI);
@@ -1795,12 +1814,11 @@ LabeledGraph computeBaikovMatrix(const LabeledGraph& G0) {
         rChangeCurrRing(savedRing);
         return G;
     }
-
     id_Delete(&P, G.over);
     id_Delete(&I, G.over);
 
-    // Step 3: Map PI to overpoly ring
     rChangeCurrRing(G.overpoly);
+    std::cout << "[DEBUG] Mapping PI to RP = G.overpoly ring" << std::endl;
     int nvars = rVar(G.over);
     int npars = rPar(G.over);
     int* perm = (int*)omAlloc0((nvars + 1) * sizeof(int));
@@ -1808,116 +1826,118 @@ LabeledGraph computeBaikovMatrix(const LabeledGraph& G0) {
     for (int i = 1; i <= nvars; ++i) perm[i] = i + npars;
     for (int i = 0; i < npars; ++i) par_perm[i] = i + 1;
     nMapFunc nMap = n_SetMap(G.over->cf, G.overpoly->cf);
-    std::cout << "[DEBUG] Mapping PI to RP=G.overpoly ring" << std::endl;
     ideal PI_mapped = id_PermIdeal(PI, 1, IDELEMS(PI), perm, G.over, G.overpoly, nMap, par_perm, npars, FALSE);
+    std::cout << "[DEBUG] Mapped PI = " << std::endl;
+    printIdeal(PI_mapped);
     id_Delete(&PI, G.over);
 
-    // Step 4: Build Gram matrix
     std::cout << "[DEBUG] Building Gram matrix" << std::endl;
-    std::cout << "[DEBUG] Gram matrix entries:" << std::endl;
-    ring R = G.over;
-    ring RP = G.overpoly;
-    std::cout << "The graph G0 = ****" << std::endl;
-    printLabeledGraph(G0);
-    std::cout << "The graph G = ****" << std::endl;
-    printLabeledGraph(G);
-    std::cout << "ring RP = G.overpoly = " << rString(RP) << std::endl;
-    std::cout << "ring R = G.over = " << rString(R) << std::endl;
-
-    int nvars1 = rVar(G.overpoly); // Adjusted to G.overpoly as per your intent
-    std::cout << "[DEBUG] nvars1 = rVar(G.overpoly) = " << nvars1 << std::endl;
+    int nvars1 = rVar(G.overpoly);
     int startvars = npars + 1;
-    std::cout << "[DEBUG] startvars = rPar(G.over) + 1 = " << startvars << std::endl;
-
-    // Preallocate gram with full size for efficiency
+    std::cout << "[DEBUG] startvars = " << startvars << std::endl;
     int gramSize = nvars1 * nvars1;
     ideal gram = idInit(gramSize, 1);
-    std::cout << "[DEBUG] Preallocated gram with size " << gramSize << std::endl;
 
-    idx = 0; // Reset idx for gram construction
+    int idx = 0;
     for (int i = 1; i <= nvars1; i++) {
-        std::cout << "[DEBUG] i = " << i << std::endl;
         for (int j = 1; j <= nvars1; j++) {
-            std::cout << "[DEBUG] j = " << j << std::endl;
-            std::cout << "[DEBUG] i= " << i << ", j= " << j << ", idx= " << idx << std::endl;
             if (i >= startvars || j >= startvars) {
-                poly p = p_One(RP);
-                p_SetExp(p, i, 1, RP);
-                p_SetExp(p, j, 1, RP);
-                p_Setm(p, RP);
-                gram->m[idx] = p;
-                std::cout << "[DEBUG] gram[" << (idx + 1) << "] = " << p_String(p, RP) << std::endl;
+                poly p = p_One(G.overpoly);
+                p_SetExp(p, i, 1, G.overpoly);
+                p_Setm(p, G.overpoly);
+                poly q = p_One(G.overpoly);
+                p_SetExp(q, j, 1, G.overpoly);
+                p_Setm(q, G.overpoly);
+                poly prod = p_Mult_q(p, q, G.overpoly);
+                gram->m[idx] = prod;
             } else {
                 gram->m[idx] = NULL;
-                std::cout << "[DEBUG] gram[" << (idx + 1) << "] = 0" << std::endl;
             }
             idx++;
         }
     }
-    std::cout << "[DEBUG] Gram matrix entries:" << std::endl;
-    printIdeal(gram);
 
-    // Step 5: Add scalar products
+    std::cout << "[DEBUG] gramSize = " << gramSize << ", idelems(gram) = " << IDELEMS(gram) << std::endl;
+    std::cout << "[DEBUG] Gram ideal = ";
+    printIdeal(gram);
+    
     std::cout << "[DEBUG] Adding scalar products to PI_mapped" << std::endl;
     for (int i = 1; i < npars; ++i) {
-        for (int j = i + 1; j < npars; ++j) {
+        for (int j = i + 1; j <= npars; ++j) {
             poly prod = p_One(G.overpoly);
             p_SetExp(prod, i, 1, G.overpoly);
             p_SetExp(prod, j, 1, G.overpoly);
             p_Setm(prod, G.overpoly);
+            std::cout << "[DEBUG] Adding scalar product var(" << i << ")*var(" << j << ") = " << p_String(prod, G.overpoly) << std::endl;
             ideal temp = idInit(1, 1);
             temp->m[0] = prod;
             PI_mapped = id_Add(PI_mapped, temp, G.overpoly);
             id_Delete(&temp, G.overpoly);
         }
     }
+    std::cout << "[DEBUG] Updated PI with scalar products = ";
+    printIdeal(PI_mapped);
 
-    // Step 6: Compute the lift matrix
+    // Perform lift directly (no kStd unless necessary)
     std::cout << "[DEBUG] Computing lift matrix" << std::endl;
-    ideal A_ideal = idLift(PI_mapped, gram, NULL, FALSE, FALSE, TRUE, NULL);
-    if (!A_ideal) {
+    matrix U = mpNew(IDELEMS(PI_mapped), IDELEMS(gram));
+    ideal A_ideal = idLift(PI_mapped, gram, NULL, FALSE, FALSE, TRUE, &U);
+    if (A_ideal == NULL) {
         std::cerr << "[ERROR] idLift failed" << std::endl;
-        id_Delete(&PI_mapped, G.overpoly);
-        idDelete(&gram);
+        mp_Delete(&U, currRing);
+        id_Delete(&PI_mapped, currRing);
+        id_Delete(&gram, currRing);
         omFree(perm);
         omFree(par_perm);
         rChangeCurrRing(savedRing);
         return G;
     }
-    matrix A = id_Module2Matrix(A_ideal, currRing);
-    id_Delete(&A_ideal, currRing);
 
-    // Step 7: Construct Baikov ring Z
-    std::cout << "[DEBUG] Constructing Baikov ring..." << std::endl;
+    std::cout << "[DEBUG] A_ideal generators = " << IDELEMS(A_ideal) << std::endl;
+    std::cout << "[DEBUG] A_ideal rank = " << A_ideal->rank << std::endl;
+    std::cout << "[DEBUG] A_ideal = ";
+    printIdeal(A_ideal);
+    std::cout << "[DEBUG] Matrix U dimensions = " << U->nrows << "x" << U->ncols << std::endl;
+    std::cout << "[DEBUG] Matrix U = " << std::endl;
+    std::cout << matrixToString(U, currRing);
+
+    matrix A = id_Module2formatedMatrix(A_ideal, IDELEMS(PI_mapped), IDELEMS(gram), currRing);
+    if (!A) {
+        std::cerr << "[ERROR] id_Module2formatedMatrix failed" << std::endl;
+        mp_Delete(&U, currRing);
+        id_Delete(&PI_mapped, currRing);
+        id_Delete(&gram, currRing);
+        omFree(perm);
+        omFree(par_perm);
+        rChangeCurrRing(savedRing);
+        return G;
+    }
+
+    std::cout << "[DEBUG] Lift matrix A dimensions = " << A->nrows << "x" << A->ncols << std::endl;
+    std::cout << "[DEBUG] Lift matrix A = " << std::endl;
+    std::cout << matrixToString(A, currRing);
+
+    // Construct Baikov ring and matrix B
     int m = npars;
     int m2 = (m * (m - 1)) / 2;
     int mt = m2 - 1;
     int n = IDELEMS(PI_mapped) - m2;
 
-    int extCount = mt + 1;
-    int varCount = n;
-
-    char** extNames = (char**)omAlloc0(extCount * sizeof(char*));
+    std::cout << "[DEBUG] Constructing Baikov ring" << std::endl;
+    char** extNames = (char**)omAlloc0((mt + 1) * sizeof(char*));
     for (int i = 0; i < mt; ++i) extNames[i] = omStrDup(("t(" + std::to_string(i + 1) + ")").c_str());
     extNames[mt] = omStrDup("D");
+    char** varNames = (char**)omAlloc0(n * sizeof(char*));
+    for (int i = 0; i < n; ++i) varNames[i] = omStrDup(("z(" + std::to_string(i + 1) + ")").c_str());
+    ring Z = createRing(extNames, mt + 1, varNames, n, ringorder_dp);
+    std::cout << "[DEBUG] Baikov ring Z = " << rString(Z) << std::endl;
 
-    char** varNames = (char**)omAlloc0(varCount * sizeof(char*));
-    for (int i = 0; i < varCount; ++i) varNames[i] = omStrDup(("z(" + std::to_string(i + 1) + ")").c_str());
-
-    ring Z = createRing(extNames, extCount, varNames, varCount, ringorder_dp);
-
-    for (int i = 0; i < extCount; ++i) omFree(extNames[i]);
-    for (int i = 0; i < varCount; ++i) omFree(varNames[i]);
-    omFree(extNames);
-    omFree(varNames);
-
-    // Step 8: Build symmetric matrix B
     std::cout << "[DEBUG] Building symmetric matrix B" << std::endl;
-    matrix B = mpNew(m, m);
+    rChangeCurrRing(Z);
+    matrix B = mpNew(nvars1, nvars1);
     matrix pq = mpNew(1, m2);
     poly sumt = NULL;
-    idx = 0; // Reset idx for B construction
-    rChangeCurrRing(Z);
+    idx = 0;
     for (int i = 1; i <= m; ++i) {
         for (int j = i + 1; j <= m; ++j) {
             poly entry = NULL;
@@ -1938,19 +1958,22 @@ LabeledGraph computeBaikovMatrix(const LabeledGraph& G0) {
         }
     }
 
-    // Step 9: Build zvars and compute B1
-    std::cout << "[DEBUG] Computing B1 matrix from zvars * A" << std::endl;
+    std::cout << "[DEBUG] Computing B1 matrix" << std::endl;
     matrix zvars = buildZVars(Z, n, m2, pq);
     matrix A_mapped = mp_Copy(A, Z);
+    std::cout << "[DEBUG] Mapped A to Z = " << std::endl;
+    std::cout << matrixToString(A_mapped, Z);
     matrix Bentries = mp_Mult(zvars, A_mapped, Z);
-    matrix B1 = mpNew(m, m);
-    for (int i = 0; i < m; ++i)
-        for (int j = 0; j < m; ++j)
-            MATELEM(B1, i + 1, j + 1) = p_Copy(Bentries->m[i * m + j], Z);
+    std::cout << "[DEBUG] Bentries = zvars * A = " << std::endl;
+    std::cout << matrixToString(Bentries, Z);
+    matrix B1 = mpNew(nvars1, nvars1);
+    for (int i = 0; i < nvars1; ++i)
+        for (int j = 0; j < nvars1; ++j)
+            MATELEM(B1, i + 1, j + 1) = p_Copy(Bentries->m[i * nvars1 + j], Z);
     B = mp_Add(B, B1, Z);
+    std::cout << "[DEBUG] Final Baikov matrix B = " << std::endl;
+    std::cout << matrixToString(B, Z);
 
-    // Step 10: Store result
-    std::cout << "[DEBUG] Storing results in labeled graph" << std::endl;
     G.baikovover = Z;
     G.baikovmatrix = B;
 
@@ -1962,6 +1985,10 @@ LabeledGraph computeBaikovMatrix(const LabeledGraph& G0) {
     mp_Delete(&B1, Z);
     mp_Delete(&pq, Z);
     p_Delete(&sumt, Z);
+    for (int i = 0; i < mt + 1; ++i) omFree(extNames[i]);
+    for (int i = 0; i < n; ++i) omFree(varNames[i]);
+    omFree(extNames);
+    omFree(varNames);
     omFree(perm);
     omFree(par_perm);
 

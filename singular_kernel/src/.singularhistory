@@ -1748,17 +1748,12 @@ LIB "feynman.lib";
   ring RB= G1.baikovover;
   setring RB;
   ring RB= G1.baikovover;
-
   graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
-
   labeledgraph G1=computeBaikovMatrix(G);
   ring RB= G1.baikovover;
-
   setring RB;
-
   RB;
-
   matrix B = G1.baikovmatrix;
-
   printMat(B);
-
+LIB "feynman.lib";
+$

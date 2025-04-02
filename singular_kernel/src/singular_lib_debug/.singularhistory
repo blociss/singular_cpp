@@ -155,9 +155,138 @@ typeof(G);
 typeof(G);$
 LIB "feynman.lib";
   graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
-
-
   labeledgraph lG = labelGraph(G,0);
   labeledgraph G1 = eliminateVariables(lG);
   labeledgraph G2 = removeElimVars(G1);
 typeof(G);$
+LIB "feynman.lib";
+  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
+  labeledgraph lG = labelGraph(G,0);
+  labeledgraph G1 = eliminateVariables(lG);
+  labeledgraph G2 = removeElimVars(G1);
+$
+LIB "feynman.lib";
+$
+LIB "feynman.lib";
+graph G = makeGraph(
+  list(1,2,3,4,5,6), 
+  list(
+      list(6,1), list(4,6), list(1,2), list(3,5), 
+      list(4,3), list(2,5), list(5,6), list(1), 
+      list(2), list(3), list(4)
+  )
+);
+// Define a list of target integrals
+list targetInt = list(
+  list(1, 1, 1, -1, -3, 1, -1, -1, -1), 
+  list(1, -1, 1, -1, -3, -1, -1, -4, -1)
+);
+    if (size(targetInt) == 0) {
+        ERROR("Empty target integral list provided.");
+    }
+    // Debug: Ensure the input graph G and target integrals are correctly passed
+    print("Graph G: " + string(G));
+    print("Target Integrals: " + string(targetInt));
+    list L = pickHighestSector(targetInt);
+    if (size(L) == 0) {
+        ERROR("pickHighestSector returned an empty list.");
+    }
+    if (size(L) > 1) {
+        ERROR("Provided integrals belong to more than one integral class.");
+    }
+    list web = generateWebSectors(L[1][1]);
+    web = setSectorMap(web);
+    print("Generated web: " + string(web));
+    list w4 = updateWeb(web, list(1,1), targetInt);
+    web = w4[1];
+    print("Size of updated web: " + string(size(web)));
+    labeledgraph G1 = computeBaikovMatrix(G);
+    setIBP reducedIBPs;
+    list MI;
+    print("Size of targetInt: " + string(size(targetInt)));
+    int te = 0;
+    reducedIBPs.seed = targetInt;
+    int j = 1;
+    if (size(web) < j) {
+        ERROR("Web list does not contain layer j=" + string(j));
+    }
+    int nSectors = size(web[j]);
+    if (nSectors == 0) {
+        ERROR("No sectors available in web[" + string(j) + "]");
+    }
+    int k = 1;
+    if (size(web[j]) < k) {
+        ERROR("Web[" + string(j) + "] does not contain sector k=" + string(k));
+    }
+    print("Computing IBP for sector: " + string(web[j][k].targetInts));
+    setIBP totalIBP = computeManyIBP(G1, web[j][k].targetInts);
+    print("Size of totalIBP.IBP: " + string(size(totalIBP.IBP)));
+    if (te == 0) {
+        reducedIBPs.over = totalIBP.over;
+        te = 1;
+    }
+    if (reducedIBPs.over == 0) {
+        ERROR("totalIBP.over is not initialized correctly.");
+    }
+    ring R = reducedIBPs.over;
+    setring R;
+    list L = getRedIBPs(totalIBP, 101);
+    if (size(L) < 2) {
+        ERROR("getRedIBPs did not return expected two lists.");
+    }
+    list indpndIBP = L[1];
+    print("Size of indpndIBP: " + string(size(indpndIBP)));
+    list masterAndTailIntgrals = L[2];
+    print("Size of masterAndTailIntgrals: " + string(size(masterAndTailIntgrals)));
+    if (size(reducedIBPs.IBP) == 0) {
+        reducedIBPs.IBP = indpndIBP;
+    } else {
+        for (int i = 1; i <= size(indpndIBP); i++) {
+            reducedIBPs.IBP[size(reducedIBPs.IBP) + 1] = indpndIBP[i];
+        }
+    }
+    kill R;
+    print("Size of masterAndTailIntgrals = " + string(size(masterAndTailIntgrals)));
+    list w = updateWeb(web, list(j, k), masterAndTailIntgrals);
+    web = w[1];
+    print("w[2] = " + string(w[2])); // Fixed debug message
+    list masterIntgralsInSector = w[2];
+    print("Size of masterIntgralsInSector = " + string(size(masterIntgralsInSector)));
+    if (size(MI) == 0) {
+        MI = masterIntgralsInSector;
+    } else {
+        for (int i = 1; i <= size(masterIntgralsInSector); i++) {
+            if (alreadyIntheList(MI, masterIntgralsInSector[i]) == 0) {
+                MI[size(MI) + 1] = masterIntgralsInSector[i];
+            }
+        }
+    }
+MI;
+reducedIBPs;
+ring G.over;
+ring R=G.over;
+  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
+ring R=G.over;
+labeledgraph lG = labelGraph(G,0);
+  def R= lG.over;
+  setring R;
+reducedIBPs;
+reducedIBPs.over;
+R;
+         ring R=reducedIBPs.over;
+reducedIBPs.IBP;
+reducedIBPs.seed;
+web;
+web.targetInts;
+web[2].targetInts;
+web[2];
+web[2][1];
+web[2][1].targetInts;
+web[2][1];
+web[2][1].sectorMap;
+web[2][1].lab;
+LIB "feynman.lib";
+ graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
+  labeledgraph G1=computeBaikovMatrix(G);
+  ring RB= G1.baikovover;
+$
