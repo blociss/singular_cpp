@@ -54,7 +54,6 @@ newstruct("Net","list rows");
 newstruct("oneIBP","list c, list i");
 newstruct("setIBP","ring over,list seed,list IBP");
 newstruct("oneSector","list lab, list sectorMap ,list targetInts ");
-newstruct("feynman", "list web, setIBP reducedIBPs, list MI");
 system("install","labeledgraph","print",printLabeledGraph,1);
 system("install","graph","print",printGraph,1);
 system("install","oneIBP","print",printIBP,1);
@@ -673,47 +672,72 @@ EXAMPLE:  removeElimVars G; shows an example
 "
 {
 labeledgraph G1;
+print("[DEBUG] Starting removeElimVars");
 def R= G.over;
+print("[DEBUG] R =G.over = " + string(R));
 def RP = G.overpoly;
+print("[DEBUG] RP =G.overpoly = " + string(RP));
 G1.vertices=G.vertices;
 G1.edges = G.edges;
 setring R;
 list el = G.elimvars;
+print("[DEBUG] el =G.elimvars = " + string(el));
 list lb = G.labels;
+print("[DEBUG] lb =G.labels = " + string(lb));
 list iv,ip;
 int j,i;
 for (i = 1; i<=size(el);i++){
   if (rvar(el[i]) != 0){
-     iv[size(iv)+1]=rvar(el[i]);
+    print("[DEBUG] rvar(el[i]) = " + string(rvar(el[i])));
+    iv[size(iv)+1]=rvar(el[i]);
   } else {
-     for (j=1;j<=npars(R);j++){ 
-       if (par(j)==el[i]){ip[size(ip)+1]=j;break;}
-     }
+    print("[DEBUG] el[i] = " + string(el[i]));
+    for (j=1;j<=npars(R);j++){
+      if (par(j)==el[i]){ip[size(ip)+1]=j;break;}
+    }
   }
 }
+
 iv = sort(iv)[1];
 ip = sort(ip)[1];
+print("[DEBUG] iv = " + string(iv));
+print("[DEBUG] ip = " + string(ip));
+
 def R1 = R;
 for (i = size(iv); i>=1;i--){
   R1 = removeVariable(R1,iv[i]);
+  print("[DEBUG] R1 after removing variable " + string(iv[i]) + " = " + string(R1));
 }
 for (i = size(ip); i>=1;i--){
+  print("[DEBUG] R1=G.over before removing parameter " + string(ip[i]) + " = " + string(R1));
   R1 = removeParameter(R1,ip[i]);
+  print("[DEBUG] R1 after removing parameter " + string(ip[i]) + " = " + string(R1));
 }
 kill iv;
+print("[DEBUG] el before setting ring RP = " + string(el));
 setring RP;
+print("[DEBUG] RP =G.overpoly = " + string(RP));
+print("[DEBUG] el before imap = " + string(el));
 list el = imap(R,el);
+print("[DEBUG] el after imap = " + string(el));
 list iv;
 for (i = 1; i<=size(el);i++){
+  print("[DEBUG] el[i] = " + string(el[i]));
   iv[size(iv)+1]=rvar(el[i]);
 }
 iv = sort(iv)[1];
 def RP1 = RP;
 for (int i = size(iv); i>=1;i--){
+  print("[DEBUG] RP1 before removing variable " + string(iv[i]) + " = " + string(RP1));
   RP1 = removeVariable(RP1,iv[i]);
+  print("[DEBUG] RP1 after removing variable " + string(iv[i]) + " = " + string(RP1));
 }
+print("[DEBUG] lb before mapping = " + string(lb));
+
 setring R1;
 list tr =imap(R,lb);
+print("[DEBUG] lb after mapping = " + string(lb));
+print("[DEBUG] tr = " + string(tr));
 G1.labels = tr;
 G1.over = R1;
 G1.overpoly = RP1;
@@ -721,11 +745,12 @@ G1.elimvars =list();
 return(G1);}
 example
 { "EXAMPLE:"; echo=2;
-  graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  //graph G = makeGraph(list(1,2,3,4,5,6),list(list(1,2),list(3,6),list(4,5),list(1,6),list(2,3),list(5,6),list(3,4),list(1),list(2),list(5),list(4)));
+  graph G = makeGraph(list(1,2,3,4,5,6),list(list(6,1),list(4,6),list(1,2),list(3,5),list(4,3),list(2,5),list(5,6),list(1),list(2),list(3),list(4)));
+
   labeledgraph lG = labelGraph(G,0);
   labeledgraph G1 = eliminateVariables(lG);
   labeledgraph G2 = removeElimVars(G1);
-  G2;
   ring R= G2.over;
   setring R;
   R;
@@ -748,7 +773,11 @@ EXAMPLE:  removeElimVars G; shows an example
 if (typeof(G0)=="graph"){
   labeledgraph lG = labelGraph(G0,0);
   labeledgraph G1 = eliminateVariables(lG);
+  print("[DEBUG] ring RP = G1.overpoly = " + string(G1.overpoly));
+  print("[DEBUG] ring R = G1.over = " + string(G1.over));
   labeledgraph G2 = removeElimVars(G1);
+  print("[DEBUG] ring RP = G2.overpoly = " + string(G2.overpoly));
+  print("[DEBUG] ring R = G2.over = " + string(G2.over));
   //return(computeBaikovMatrix(G2));
   kill G0;
   labeledgraph G0 = G2;
@@ -756,15 +785,27 @@ if (typeof(G0)=="graph"){
 if (typeof(G0) != "labeledgraph"){
   ERROR("expected a graph or labeledgraph");
 }
+
+ring Rp = G0.overpoly;
+ring R = G0.over;
+print("The ring R =G0.over = " + string(R));
+print("The ring RP =G0.overpoly =  " + string(Rp));
+
 labeledgraph G = G0;
 def R = G.over;
 def RP = G.overpoly;
+print("The ring R =G.over = " + string(R));
+print("The ring RP =G.overpoly =  " + string(RP));
 setring R;
 ideal P = propagators(G);
 ideal I = ISP(G);
+print("[DEBUG] P = propagators(G) = " + string(P));
+print("[DEBUG] I = ISP(G) = " + string(I));
 ideal PI=P,I;
+print("[DEBUG] PI = P,I = " + string(PI));
 setring RP;
-ideal PI = imap(R,PI);
+ideal PI_mapped = imap(R,PI);
+print("[DEBUG] PI = imap(R,PI) = " + string(PI));
 int i,j;
 ideal gram;
 int idx=1;
@@ -779,17 +820,25 @@ for (i = 1;i<=nvars(RP);i++){
      idx++;
    }
 }
+print("The ideal gram = " + string(gram));
+print( "size of gram = " + string(size(gram)));
 for (i = 1;i<startvars;i++){
    for (j = i+1;j<startvars;j++){
-      PI=PI,var(i)*var(j);
+      PI_mapped=PI_mapped,var(i)*var(j);
   }
 }
-matrix A = lift(PI,gram);
+print("[DEBUG] PI_mapped  = " + string(PI_mapped));
+print("size of PI_mapped =" + string(size(PI_mapped)));
+matrix A = lift(PI_mapped,gram);
+print("[DEBUG] size of A = lift(PI_mapped,gram) = " + string(size(A)));
+print("[DEBUG] A = lift(PI_mapped,gram) = ");
+print(A);
 int m = npars(R);
 int m2 = (m*(m-1)) div 2;
 int mt= m2-1;
-int n = ncols(PI)-m2;
+int n = ncols(PI_mapped)-m2;
 ring Z = (0,(t(1..mt),D)),(z(1..n)),dp; //change this
+print("[DEBUG] ring Z = (0,(t(1..mt),D)),(z(1..n)),dp; = " + string(Z));
 //ring Z = (0,t(1..mt)),(z(1..n)),dp;
 matrix B[nvars(RP)][nvars(RP)];
 int idx=1;
@@ -811,9 +860,11 @@ for (i=1; i<=m;i++){
 }
 matrix zvars[1][n+m2] = z(1..n),pq[1..m2];
 matrix A = imap(RP,A);
+print("[DEBUG] A = imap(RP,A) = " + string(A));
 matrix Bentries = zvars * A;
 matrix B1[nvars(RP)][nvars(RP)] = Bentries[1,1..ncols(Bentries)];
 B=B+B1;
+print("[DEBUG] B = B+B1 = " + string(B));
 labeledgraph GG =G;
 GG.baikovover=Z;
 GG.baikovmatrix = B;
@@ -2457,302 +2508,49 @@ graph G = makeGraph(
       list(2), list(3), list(4)
   )
 );
-
-// Define a list of target integrals
-list targetInt = list(
-  list(1, 1, 1, -1, -3, 1, -1, -1, -1), 
-  list(1, -1, 1, -1, -3, -1, -1, -4, -1)
-);
-
-// Call the function
-list result = getReducedIBPSystem(G, targetInt);
-
-// Extract results
-setIBP reducedIBPs = result[1];
-list MI = result[2];
-
-// Print results
-print("Reduced IBPs: " + string(reducedIBPs));
-print("Master Integrals: " + string(MI));
 }
 
-
-
-
-
-
-
-
-proc computeFeynmanData(graph G, list targetInt)
-"USAGE: computeFeynmanData(G, targetInt); G graph, targetInt list
-ASSUME: G is a graph, targetInt is a list of target integral exponents.
-RETURN: list of three feynman structures: data_1 (j=1, k=1), data_2 (j=2, k=1), data_3 (j=2, k=2)
-KEYWORDS: Feynman graph, IBPs, sectors
-"
-{
-    if (size(targetInt) == 0) {
-        ERROR("Empty target integral list provided.");
-    }
-
-    print("Graph G: " + string(G));
-    print("Target Integrals: " + string(targetInt));
-
-    list L = pickHighestSector(targetInt);
-    if (size(L) == 0) {
-        ERROR("pickHighestSector returned an empty list.");
-    }
-    if (size(L) > 1) {
-        ERROR("Provided integrals belong to more than one integral class.");
-    }
-
-    list web = generateWebSectors(L[1][1]);
-    web = setSectorMap(web);
-    print("Generated web: " + string(web));
-
-    list w4 = updateWeb(web, list(1,1), targetInt);
-    web = w4[1];
-    print("Size of updated web: " + string(size(web)));
-
-    labeledgraph G1 = computeBaikovMatrix(G);
-
-    feynman data_1;
-    feynman data_2;
-    feynman data_3;
-
-    data_1.reducedIBPs.seed = targetInt;
-    data_2.reducedIBPs.seed = targetInt;
-    data_3.reducedIBPs.seed = targetInt;
-
-    int te = 0;
-    list layers = list(1, 2);
-
-    for (int lj = 1; lj <= size(layers); lj++) {
-        int j = layers[lj];
-        if (size(web) < j) {
-            ERROR("Web list does not contain layer j=" + string(j));
-        }
-        int nSectors = size(web[j]);
-        if (nSectors == 0) {
-            ERROR("No sectors available in web[" + string(j) + "]");
-        }
-
-        list sectors;
-        if (j == 1) {
-            sectors = list(1);
-        } else {
-            sectors = list(1, 2);
-        }
-
-        for (int sk = 1; sk <= size(sectors); sk++) {
-            int k = sectors[sk];
-            if (size(web[j]) < k) {
-                ERROR("Web[" + string(j) + "] does not contain sector k=" + string(k));
-            }
-
-            print("Computing IBP for j=" + string(j) + ", k=" + string(k) + ": " + string(web[j][k].targetInts));
-            setIBP totalIBP = computeManyIBP(G1, web[j][k].targetInts);
-            print("Size of totalIBP.IBP: " + string(size(totalIBP.IBP)));
-
-            if (te == 0) {
-                data_1.reducedIBPs.over = totalIBP.over;
-                data_2.reducedIBPs.over = totalIBP.over;
-                data_3.reducedIBPs.over = totalIBP.over;
-                te = 1;
-            }
-            if (data_1.reducedIBPs.over == 0) {
-                ERROR("totalIBP.over is not initialized correctly.");
-            }
-
-            ring R = data_1.reducedIBPs.over;
-            setring R;
-            list L_red = getRedIBPs(totalIBP, 101);
-            if (size(L_red) < 2) {
-                ERROR("getRedIBPs did not return expected two lists.");
-            }
-
-            list indpndIBP = L_red[1];
-            print("Size of indpndIBP: " + string(size(indpndIBP)));
-            list masterAndTailIntgrals = L_red[2];
-            print("Size of masterAndTailIntgrals: " + string(size(masterAndTailIntgrals)));
-
-            if (j == 1 && k == 1) {
-                data_1.reducedIBPs.IBP = indpndIBP;
-                print("Assigned IBPs to data_1 (j=1, k=1), size: " + string(size(data_1.reducedIBPs.IBP)));
-            } else {
-                if (j == 2 && k == 1) {
-                    data_2.reducedIBPs.IBP = indpndIBP;
-                    print("Assigned IBPs to data_2 (j=2, k=1), size: " + string(size(data_2.reducedIBPs.IBP)));
-                }
-                if (j == 2 && k == 2) {
-                    data_3.reducedIBPs.IBP = indpndIBP;
-                    print("Assigned IBPs to data_3 (j=2, k=2), size: " + string(size(data_3.reducedIBPs.IBP)));
-                }
-            }
-
-            list w = updateWeb(web, list(j, k), masterAndTailIntgrals);
-            web = w[1];
-            print("w[2] for j=" + string(j) + ", k=" + string(k) + ": " + string(w[2]));
-            list masterIntgralsInSector = w[2];
-            print("Size of masterIntgralsInSector: " + string(size(masterIntgralsInSector)));
-
-            if (j == 1 && k == 1) {
-                data_1.MI = masterIntgralsInSector;
-                print("Assigned MI to data_1 (j=1, k=1), size: " + string(size(data_1.MI)));
-            } else {
-                if (j == 2 && k == 1) {
-                    data_2.MI = masterIntgralsInSector;
-                    print("Assigned MI to data_2 (j=2, k=1), size: " + string(size(data_2.MI)));
-                }
-                if (j == 2 && k == 2) {
-                    data_3.MI = masterIntgralsInSector;
-                    print("Assigned MI to data_3 (j=2, k=2), size: " + string(size(data_3.MI)));
-                }
-            }
-
-            kill R;
-        }
-    }
-
-    // Assign web as a list, not a Net with rows
-    data_1.web = web;
-    data_2.web = web;
-    data_3.web = web;
-
-    return(list(data_1, data_2, data_3));
-}
-example{
-  graph G = makeGraph(list(1,2,3,4,5,6), list(list(6,1), list(4,6), list(1,2), list(3,5), list(4,3), list(2,5), list(5,6), list(1), list(2), list(3), list(4)));
-list targetInt = list(list(1,1,1,-1,-3,1,-1,-1,-1), list(1,-1,1,-1,-3,-1,-1,-4,-1));
-list result = computeFeynmanData(G, targetInt);
-feynman data_1 = result[1];
-feynman data_2 = result[2];
-feynman data_3 = result[3];
-print("data_1 (j=1, k=1) IBPs: " + string(size(data_1.reducedIBPs.IBP)));
-print("data_1 (j=1, k=1) MI: " + string(size(data_1.MI)));
-print("data_2 (j=2, k=1) IBPs: " + string(size(data_2.reducedIBPs.IBP)));
-print("data_2 (j=2, k=1) MI: " + string(size(data_2.MI)));
-print("data_3 (j=2, k=2) IBPs: " + string(size(data_3.reducedIBPs.IBP)));
-print("data_3 (j=2, k=2) MI: " + string(size(data_3.MI)));
-}
-
-
-// Helper procedure to compare two integer lists for equality
-proc eq_int_list(list a, list b) {
-  print("eq_int_list: Comparing lists, size(a)=" + string(size(a)) + ", size(b)=" + string(size(b)));
-  if (size(a) != size(b)) {
-      print("eq_int_list: Sizes differ, returning 0");
-      return(0);
+example {
+  "EXAMPLE:"; echo = 2;
+  
+  // Create a simple Feynman diagram with 3 vertices and 3 edges
+  // First, create the vertices list
+  list vertices = list(intvec(1), intvec(2), intvec(3));
+  
+  // Create the edges list (both internal and external)
+  // Internal edges: [1,2], [2,3]
+  // External edge: [1]
+  list edges = list(
+    list(intvec(1,2)),  // internal edge
+    list(intvec(2,3)),  // internal edge
+    list(intvec(1))     // external edge
+  );
+  
+  // Create the base graph
+  Graph G = makeGraph(vertices, edges);
+  
+  // Label the graph (this creates the necessary rings and labels)
+  LabeledGraph lG = labelGraph(G, 0);
+  
+  // Print the labeled graph to see its structure
+  printLabeledGraph(lG);
+  
+  // Eliminate variables
+  LabeledGraph G1 = eliminateVariables(lG);
+  
+  // Remove eliminated variables
+  LabeledGraph G2 = removeElimVars(G1);
+  
+  // Compute the Baikov matrix
+  LabeledGraph G3 = computeBaikovMatrix(G2);
+  
+  // Print the final Baikov matrix
+  if (G3.baikovmatrix) {
+    printMatrix(G3.baikovmatrix);
   }
-  for (int i = 1; i <= size(a); i++) {
-      print("eq_int_list: Comparing a[" + string(i) + "]=" + string(a[i]) + " with b[" + string(i) + "]=" + string(b[i]));
-      if (a[i] != b[i]) {
-          print("eq_int_list: Elements differ at index " + string(i) + ", returning 0");
-          return(0);
-      }
-  }
-  print("eq_int_list: Lists are equal, returning 1");
-  return(1);
-}
-
-// Helper procedure to merge two lists of integer vectors, removing duplicates
-proc merge_int_vectors(list A, list B) {
-  print("merge_int_vectors: Merging lists, size(A)=" + string(size(A)) + ", size(B)=" + string(size(B)));
-  list C = A;
-  for (int i = 1; i <= size(B); i++) {
-      int found = 0;
-      for (int j = 1; j <= size(A); j++) {
-          print("merge_int_vectors: Checking B[" + string(i) + "] against A[" + string(j) + "]");
-          if (eq_int_list(A[j], B[i])) {
-              found = 1;
-              break;
-          }
-      }
-      if (found == 0) {
-          print("merge_int_vectors: Adding B[" + string(i) + "] to C");
-          C[size(C) + 1] = B[i];
-      }
-  }
-  print("merge_int_vectors: Merged list size=" + string(size(C)));
-  return(C);  // Fixed from return C;
-}
-
-// Helper procedure to merge two lists of IBPs, removing duplicates based on string representation
-proc merge_ibp(list A, list B) {
-  print("merge_ibp: Merging IBPs, size(A)=" + string(size(A)) + ", size(B)=" + string(size(B)));
-  list C = A;
-  for (int i = 1; i <= size(B); i++) {
-      int found = 0;
-      for (int j = 1; j <= size(A); j++) {
-          print("merge_ibp: Comparing B[" + string(i) + "] with A[" + string(j) + "]");
-          if (string(A[j]) == string(B[i])) {
-              found = 1;
-              break;
-          }
-      }
-      if (found == 0) {
-          print("merge_ibp: Adding B[" + string(i) + "] to C");
-          C[size(C) + 1] = B[i];
-      }
-  }
-  print("merge_ibp: Merged IBP list size=" + string(size(C)));
-  return(C);  // Fixed from return C;
-}
-
-// Helper procedure to merge two lists of sectors, combining targetInts where labs match
-proc merge_sector_lists(list A, list B) {
-  print("merge_sector_lists: Merging sectors, size(A)=" + string(size(A)) + ", size(B)=" + string(size(B)));
-  list C = A;
-  for (int i = 1; i <= size(B); i++) {
-      int found = 0;
-      int idx = 0;
-      for (int j = 1; j <= size(A); j++) {
-          print("merge_sector_lists: Comparing B[" + string(i) + "].lab with A[" + string(j) + "].lab");
-          if (eq_int_list(A[j].lab, B[i].lab)) {
-              found = 1;
-              idx = j;
-              break;
-          }
-      }
-      if (found) {
-          print("merge_sector_lists: Merging targetInts for lab at index " + string(idx));
-          C[idx].targetInts = merge_int_vectors(C[idx].targetInts, B[i].targetInts);
-      } else {
-          print("merge_sector_lists: Adding new sector B[" + string(i) + "]");
-          C[size(C) + 1] = B[i];
-      }
-  }
-  print("merge_sector_lists: Merged sector list size=" + string(size(C)));
-  return(C);  // Fixed from return C;
-}
-
-// Main merge procedure
-proc mergeFeynman(feynman d1, feynman d2)
-"USAGE: mergeFeynman(d1, d2); d1 feynman, d2 feynman
-ASSUME: d1 and d2 are feynman structures with compatible rings and web structures.
-RETURN: A single feynman structure combining d1 and d2, removing duplicates where applicable.
-KEYWORDS: Feynman graph, merge, IBPs
-"
-{
-  print("mergeFeynman: Starting merge of d1 and d2");
-  feynman out;
-
-  print("mergeFeynman: Merging MI");
-  out.MI = merge_int_vectors(d1.MI, d2.MI);
-
-  print("mergeFeynman: Setting reducedIBPs.over from d1");
-  out.reducedIBPs.over = d1.reducedIBPs.over;
-  print("mergeFeynman: Merging reducedIBPs.seed");
-  out.reducedIBPs.seed = merge_int_vectors(d1.reducedIBPs.seed, d2.reducedIBPs.seed);
-  print("mergeFeynman: Merging reducedIBPs.IBP");
-  out.reducedIBPs.IBP = merge_ibp(d1.reducedIBPs.IBP, d2.reducedIBPs.IBP);
-
-  print("mergeFeynman: Initializing web");
-  out.web = list();
-  for (int i = 1; i <= size(d1.web); i++) {
-      print("mergeFeynman: Merging web layer " + string(i));
-      out.web[i] = merge_sector_lists(d1.web[i], d2.web[i]);
-  }
-
-  print("mergeFeynman: Merge complete, returning out");
-  return(out);
+  
+  // Clean up
+  rKill(G3.baikovover);
+  rKill(G3.over);
+  rKill(G3.overpoly);
 }

@@ -1,0 +1,136 @@
+proc computeFeynmanData(graph G, list targetInt)
+"USAGE: computeFeynmanData(G, targetInt); G graph, targetInt list
+ASSUME: G is a graph, targetInt is a list of target integral exponents.
+RETURN: list of two feynman structures: data1 (j=2, k=1), data2 (j=2, k=2)
+KEYWORDS: Feynman graph, IBPs, sectors
+"
+{
+    // Define the structures
+    newstruct("MI", "list masterIntegrals");
+    newstruct("feynman", "MI MI, setIBP reducedIBPs, Net web");
+
+    // Validate target integrals
+    if (size(targetInt) == 0) {
+        ERROR("Empty target integral list provided.");
+    }
+
+    // Debug: Display inputs
+    print("Graph G: " + string(G));
+    print("Target Integrals: " + string(targetInt));
+
+    // Process target integrals
+    list L = pickHighestSector(targetInt);
+    if (size(L) == 0) {
+        ERROR("pickHighestSector returned an empty list.");
+    }
+    if (size(L) > 1) {
+        ERROR("Provided integrals belong to more than one integral class.");
+    }
+
+    // Generate and update the web
+    list web = generateWebSectors(L[1][1]);
+    web = setSectorMap(web);
+    print("Generated web: " + string(web));
+
+    list w4 = updateWeb(web, list(1,1), targetInt);
+    web = w4[1];
+    print("Size of updated web: " + string(size(web)));
+
+    // Initialize Baikov matrix
+    labeledgraph G1 = computeBaikovMatrix(G);
+
+    // Define feynman structures
+    feynman data1;
+    feynman data2;
+
+    // Set seeds for both
+    data1.reducedIBPs.seed = targetInt;
+    data2.reducedIBPs.seed = targetInt;
+
+    // Process layers up to j=2
+    int te = 0;  // Flag for ring initialization
+    list layers = list(1, 2);
+
+    for (int lj = 1; lj <= size(layers); lj++) {
+        int j = layers[lj];
+        if (size(web) < j) {
+            ERROR("Web list does not contain layer j=" + string(j));
+        }
+        int nSectors = size(web[j]);
+        if (nSectors == 0) {
+            ERROR("No sectors available in web[" + string(j) + "]");
+        }
+
+        list sectors;
+        if (j == 1) {
+            sectors = list(1);
+        } else {
+            sectors = list(1, 2);
+        }
+
+        for (int sk = 1; sk <= size(sectors); sk++) {
+            int k = sectors[sk];
+            if (size(web[j]) < k) {
+                ERROR("Web[" + string(j) + "] does not contain sector k=" + string(k));
+            }
+
+            print("Computing IBP for layer j=" + string(j) + ", sector k=" + string(k) + ": " + string(web[j][k].targetInts));
+
+            setIBP totalIBP = computeManyIBP(G1, web[j][k].targetInts);
+            print("Size of totalIBP.IBP: " + string(size(totalIBP.IBP)));
+
+            if (te == 0) {
+                data1.reducedIBPs.over = totalIBP.over;
+                data2.reducedIBPs.over = totalIBP.over;
+                te = 1;
+            }
+            if (data1.reducedIBPs.over == 0) {
+                ERROR("totalIBP.over is not initialized correctly.");
+            }
+
+            ring R = data1.reducedIBPs.over;
+            setring R;
+
+            list L_red = getRedIBPs(totalIBP, 101);
+            if (size(L_red) < 2) {
+                ERROR("getRedIBPs did not return expected two lists.");
+            }
+
+            list indpndIBP = L_red[1];
+            print("Size of indpndIBP: " + string(size(indpndIBP)));
+
+            list masterAndTailIntgrals = L_red[2];
+            print("Size of masterAndTailIntgrals: " + string(size(masterAndTailIntgrals)));
+
+            if (j == 2) {
+                if (k == 1) {
+                    data1.reducedIBPs.IBP = indpndIBP;
+                } else if (k == 2) {
+                    data2.reducedIBPs.IBP = indpndIBP;
+                }
+            }
+
+            kill R;
+
+            list w = updateWeb(web, list(j, k), masterAndTailIntgrals);
+            web = w[1];
+            print("w[2] for j=" + string(j) + ", k=" + string(k) + ": " + string(w[2]));
+            
+            list masterIntgralsInSector = w[2];
+            print("Size of masterIntgralsInSector: " + string(size(masterIntgralsInSector)));
+
+            if (j == 2) {
+                if (k == 1) {
+                    data1.MI.masterIntegrals = masterIntgralsInSector;
+                } else if (k == 2) {
+                    data2.MI.masterIntegrals = masterIntgralsInSector;
+                }
+            }
+        }
+    }
+
+    data1.web.rows = web;
+    data2.web.rows = web;
+
+    return list(data1, data2);
+}

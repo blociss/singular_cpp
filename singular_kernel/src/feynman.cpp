@@ -32,11 +32,14 @@ void printIdeal(const ideal I)
         poly p = I->m[i];
         if (p) {
             char* pStr = p_String(p, currRing);
-            std::cout << "  [" << i << "]: " << (pStr ? pStr : "null") << std::endl;
+            std::cout  << (pStr ? pStr : "null") << ",";
             if (pStr) omFree(pStr);
         }
+        else {
+            std::cout << " 0" << ",";
+        }
     }
-    
+    std::cout<<std::endl;
     rChangeCurrRing(savedRing);
 }
 
@@ -2022,14 +2025,14 @@ matrix gram_mat=id_Module2Matrix(gram, currRing);
     std::cout << "[DEBUG] Computing lift matrix" << std::endl;
    
     ideal rest = NULL;
-   // matrix U=NULL;
+    matrix U=NULL;
 // Try different algorithm if default fails
-ideal A_ideal = idLift(PI_mod, gram_mod, NULL, FALSE, FALSE, TRUE, NULL, GbDefault);
+ideal A_ideal = idLift(PI_mod, gram_mod, NULL, FALSE, TRUE, TRUE, NULL, GbDefault);
    std::cout<<"print A_ideal" << std::endl;
    printIdeal(A_ideal);
     
   //  U=id_Module2Matrix(PI_mod, currRing);
-    matrix U=id_Module2formatedMatrix(A_ideal,MATROWS(A_ideal),MATCOLS(A_ideal),currRing); 
+    matrix AA=id_Module2Matrix(A_ideal,currRing); 
    std::cout<<" [DEBUG] Before U"<<std::endl;
    // matrix U=matIdLift(PI_mapped, gram); // Compute the lift matrix (A M)
 
